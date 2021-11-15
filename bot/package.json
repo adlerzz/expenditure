@@ -1,0 +1,21 @@
+{
+  "name": "expend-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.ts",
+  "scripts": {
+    "backend:dev:start": "ts-node -P tsconfig.json app.ts"
+  },
+  "dependencies": {
+    "telegraf": "^4.4.2",
+    "tslib": "^2.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^16.10.3",
+    "ts-node": "^10.3.0",
+    "typescript": "^4.4.3"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -3,6 +3,8 @@
     "module": "commonjs",
     "target": "es2020",
     "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "sourceMap": true
   },
   "files": true,

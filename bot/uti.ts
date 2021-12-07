@@ -1,74 +1,9 @@
-type ID = string;
+import {ID, Command, Record, Category} from "./types";
+import {DB} from './app';
 
-interface Category {
-    id: ID;
-    parentId: ID;
-    name: string;
-    aliases?: string[];
-}
-
-interface Record {
-    id: ID;
-    categoryId: ID;
-    userId: ID;
-    value: number;
-    timestamp: Date;
-    comment: String;
-}
-
-interface Command {
-    opcode: string;
-    param?: string;
-    value?: string;
-}
-
-
-class CategoriesHolder {
-    private __categories: Array<Category> = [];
-    private __seq = 0;
-
-    constructor() {
-    }
-
-    public addCategory(categoryName: string, parentCategory?: string, aliases?: Array<string>): boolean {
-
-        let parentCategoryId = null;
-        if (parentCategory){
-            if(this.hasCategory(parentCategory)){
-                parentCategoryId = this.getCategoryByName(parentCategory).id;
-            }
-        }
-
-        if (this.hasCategory(categoryName)){
-            return false;
-        }
-
-        this.__seq++;
-        const newCategory = {
-            id: this.__seq.toString(),
-            parentId: parentCategoryId,
-            name: categoryName,
-            aliases: aliases ?? []
-        }
-        this.__categories.push(newCategory);
-        return true;
-
-    }
-
-    public hasCategory(name: string): boolean {
-        return this.__categories.filter(c => c.name === name).length > 0
-    }
-
-    public getCategoryByName(name: string): Category {
-        return this.__categories.filter(c => c.name === name)?.pop();
-    }
-
-    public getCategory(text: string): Category | null {
-        return this.__categories.filter(c=> c.name === text || c.aliases.includes(text))?.pop() ?? null;
-    }
-
-
-}
+const USER_ID = '362211767'
+const TODAY = ['today', 'td', 'сегодня', 'сег', 'сёння', 'сн'];
+const YESTERDAY = ['yesterday', 'yd', 'вчера', 'вч', 'учора', 'уч'];
 
 function parseCurrency(text: string): number | null {
     if(text.search(/^\d+([,.]\d+)?$/) === -1){
@@ -78,28 +13,40 @@ function parseCurrency(text: string): number | null {
 }
 
 function parseDate(text: string): Date | null {
-    switch (text){
-        case 'today': return new Date();
-        case 'yesterday': return (() => {const d = new Date(); d.setDate( d.getDate() - 1); return d;})();
 
-    }
 
     return null;
 }
 
 function parseCommand(inputString: string): Command {
-    const cb = inputString.indexOf(' ');
+    /* /opcode param argument: value*/
+    let rest = inputString;
+    let result: Command = {} as Command;
 
-    const opcode = inputString.slice(0, cb).toLowerCase();
+    const opcodeEnd = rest.indexOf(' ');
+    result.opcode = rest.slice(0, opcodeEnd).toLowerCase();
+    rest = rest.slice(opcodeEnd + 1);
 
-    const rest = inputString.slice(cb+1);
-    const ab = rest.indexOf(':');
+    const paramEnd = rest.indexOf(' ');
+    if (paramEnd === -1) {
+        result.param = rest;
+        return result;
+    }
 
+    result.param = rest.slice(0, paramEnd).toLowerCase();
+    rest = rest.slice(paramEnd + 1);
 
-    const param = ab !== -1 ? rest.slice(0, ab).toLowerCase() : '';
-    const value = rest.slice(ab+1).trim();
+    const argEnd = rest.indexOf(':');
 
-    return {opcode, param, value};
+    if(argEnd === -1){
+        result.argument = rest;
+        return result;
+    }
+
+    result.argument = rest.slice(0, argEnd);
+    result.additional = rest.slice(argEnd + 1).trim();
+
+    return result;
 }
 
 function parseRecord(inputString: string): Record {
@@ -109,7 +56,7 @@ function parseRecord(inputString: string): Record {
         .split(' ')
         .filter(s => s.length > 0);
     console.log({part, comment});
-    return null;
+    return {id: "-1", categoryId: "-1", comment, timestamp: new Date(), userId: USER_ID, value: -1} as Record;
 }
 
 function parse(inputString: string): Record | Command {
@@ -117,27 +64,113 @@ function parse(inputString: string): Record | Command {
     return trimmed.startsWith('/') ?
         parseCommand(trimmed.slice(1)) :
         parseRecord(trimmed);
-
+}
+function isCommand(p: Record| Command): p is Command {
+    return (p as Command).opcode !== undefined;
 }
 
-function prepare(): CategoriesHolder {
-    const ch = new CategoriesHolder();
-    ch.addCategory("Food");
-    ch.addCategory("Fresh bread", "Food", ['bread']);
-    return ch;
+function executeCommand(command: Command): boolean {
+    let c: number;
+    let result = false;
+    switch (command.opcode) {
+        case 'add':    c = 100; break;
+        case 'edit':   c = 200; break;
+        case 'show':   c = 300; break;
+        case 'del':    c = 400; break;
+        default:       c = 0;
+    }
+
+    switch (command.param) {
+        case 'cat':     c += 1; break;
+        case 'subcat':  c += 2; break;
+        case 'aliases': c += 3; break;
+        case 'rec':     c += 4; break;
+    }
+
+    switch (c) {
+        case 101: result = createCategory(command.argument); break;
+        case 102: result = createSubcategory(command.argument, command.additional); break;
+        case 103: result = addAliases(command.argument, command.additional); break;
+        case 301: result = showCategories(); break;
+
+    }
+    return result;
+}
+
+function createCategory(name: string): boolean {
+    if(DB.getCategory(name)){
+        return false;
+    }
+    return DB.addCategory( {id: "-1", parentId: "0", name: name.toUpperCase(), aliases: []} as Category);
+}
+
+function createSubcategory(parent: string, name: string): boolean{
+    const p = DB.getCategory(parent);
+    if(!p) {
+        return false;
+    }
+    if(DB.getCategory(name)){
+        return false;
+    }
+    return DB.addCategory({id: "-1", parentId: p.id, name: name.toUpperCase(), aliases: []} as Category);
+}
+
+function addAliases(name: string, aliases: string): boolean{
+    const c = DB.getCategory(name);
+    if(!c){
+        return false;
+    }
+    c.aliases = aliases.split(' ').filter(s => s.length > 1).map(s => s.toUpperCase());
+    return DB.updateCategory(c);
+}
+
+function showCategories(): boolean {
+    console.log(DB.getCategories());
+    return true;
+}
+
+function resetDB(){
+    DB.reset();
 }
 
 export function main(){
-    const ch = prepare();
-    const inp = [
-        "/do peep: Hi my name is Y",
-        "/do no",
-        "/do :no",
-        "meat  4.80   ( to wine )   ",
+    resetDB();
+    const inputStream = [
+        "/add cat Goods ",
+        "/add subcat goods: meat and fish",
+        "/add subcat goods: dairy",
+        "/add subcat goods: eggs",
+        "/add subcat goods: oil",
+        "/add subcat goods: vegetables",
+        "/add subcat goods: fruits",
+        "/add aliases meat and fish: meat fish",
+        "/add subcat goods: drinks",
+        "/add subcat goods: breads",
+        "/add subcat goods: candies",
+        "/add subcat goods: delicacy",
+        "/add subcat goods: meals",
+        "/add cat Big regular spends",
+        "/add aliases Big regular spends: big",
+        "/show cat",
+        "meat  4.80 ( to wine ) ",
         "mobile 11,80 november",
         "bread 5.13 02-11",
     ];
-    inp.map(s => parse(s))
-       .forEach(e => console.log(e));
+    inputStream
+       .map(s => ( {s, p: parse(s)}) )
+       .map( it => {
+           console.log(it);
+           return it.p
+       })
+       .forEach( it => {
+           if(isCommand(it)){
+               const res = executeCommand(it);
+               console.log('executed, res = ' + res);
+           } else {
+               console.log('no execution');
+           }
+       });
+
+
 
 }

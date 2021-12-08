@@ -25,26 +25,32 @@ interface DBEntry {
 export class DBHelper {
 
     private instance: JSONdb;
-    /*private data: DBRoot*/
 
     constructor() {
         this.instance = new JSONdb('DB.json');
-        //this.data = this.instance.JSON() as DBRoot;
         console.log(['db', this.instance.JSON()])
+    }
 
+    private getEntryById(id: ID): DBEntry {
+        return this.instance.get(id) as DBEntry;
+    }
+
+    private updatePayload(id: ID, payload: object){
+        const entry = this.getEntryById(id);
+        entry.payload = payload;
+        this.instance.set(id, entry);
     }
 
     public nextSequence(): ID {
-        const sequence = this.instance.get(SEQUENCE_ID) as DBEntry;
+        const sequence = this.getEntryById(SEQUENCE_ID);
         const result = (sequence.payload as Sequence).value++;
         this.instance.set(SEQUENCE_ID, sequence);
         return result.toString() as ID;
     }
 
-
     private getCategoriesWithIndex(): [Array<Category>, Array<ID>] {
-        const index = (this.instance.get(CATEGORY_INDEX_ID) as DBEntry).payload as Array<string>;
-        return [index.map(i => (this.instance.get(i) as DBEntry).payload as Category), index];
+        const index = this.getEntryById(CATEGORY_INDEX_ID).payload as Array<string>;
+        return [index.map(i => this.getEntryById(i).payload as Category), index];
     }
 
     public getCategories(): Array<Category> {
@@ -73,10 +79,8 @@ export class DBHelper {
         }
     }
 
-
-
     public getCategoryByID(id: ID): Category | null {
-        return (this.instance.get(id) as DBEntry).payload as Category ?? null;
+        return this.getEntryById(id).payload as Category ?? null;
     }
 
     public updateCategory(id: ID, category: Partial<Category>): boolean {
@@ -130,13 +134,6 @@ export class DBHelper {
 
     public endSession(){
         this.instance.sync()
-    }
-
-
-    private updatePayload(id: ID, payload: object){
-        const entry = this.instance.get(id) as DBEntry;
-        entry.payload = payload;
-        this.instance.set(id, entry);
     }
 
 }

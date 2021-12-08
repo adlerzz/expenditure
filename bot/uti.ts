@@ -121,6 +121,12 @@ function addAliases(name: string, aliasesStr: string): boolean{
     return DB.updateCategory(id,{aliases});
 }
 
+function getCategoriesDescriptors(): Array<[string, ID]> {
+    return DB.getCategories()
+        .map(cat => ([cat.id, [cat.name, ...cat.aliases]]))
+        .flatMap( ([id, descs]: [ID, Array<string>]) => descs.map(desc => ([desc, id] as [string, ID])));
+}
+
 function showCategories(): boolean {
     console.log(DB.getCategories());
     return true;
@@ -135,19 +141,29 @@ export function main(){
     const inputStream = [
         "/add cat Goods ",
         "/add subcat goods: meat and fish",
+        "/add aliases meat and fish: meat fish",
         "/add subcat goods: dairy",
         "/add subcat goods: eggs",
         "/add subcat goods: oil",
         "/add subcat goods: vegetables",
         "/add subcat goods: fruits",
-        "/add aliases meat and fish: meat fish",
         "/add subcat goods: drinks",
         "/add subcat goods: breads",
+        "/add subcat goods: cereals and flakes",
+        "/add aliases cereals and flakes: cereals flakes",
         "/add subcat goods: candies",
         "/add subcat goods: delicacy",
         "/add subcat goods: meals",
         "/add cat Big regular spends",
         "/add aliases Big regular spends: big",
+        "/add subcat big: credit",
+        "/add subcat big: rent",
+        "/add subcat big: car service",
+        "/add aliases car service: service TO",
+        "/add subcat big: car insurance",
+        "/add aliases car insurance: insurance",
+        "/add subcat big: psychologists",
+        "/add aliases psychologists: psy",
         "/show cat",
         "meat  4.80 ( to wine ) ",
         "mobile 11,80 november",
@@ -157,15 +173,12 @@ export function main(){
        .map(s => ( {s, p: parse(s)}) )
        .map( it => {
            console.log(it);
-           return it.p
+           return it.p;
        })
        .forEach( it => {
            if(isCommand(it)){
-               const res = executeCommand(it);
-               console.log('executed, res = ' + res);
-           } else {
-               console.log('no execution');
+               executeCommand(it);
            }
        });
-
+    console.log(getCategoriesDescriptors());
 }

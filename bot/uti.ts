@@ -101,7 +101,7 @@ function createCategory(name: string): boolean {
     if(DB.getCategory(name)){
         return false;
     }
-    return DB.addCategory( {id: "-1", parentId: "0", name: name.toUpperCase(), aliases: []} as Category);
+    return DB.addCategory(name.toUpperCase(), "0");
 }
 
 function createSubcategory(parent: string, name: string): boolean{
@@ -112,16 +112,13 @@ function createSubcategory(parent: string, name: string): boolean{
     if(DB.getCategory(name)){
         return false;
     }
-    return DB.addCategory({id: "-1", parentId: p.id, name: name.toUpperCase(), aliases: []} as Category);
+    return DB.addCategory(name.toUpperCase(),  p.id);
 }
 
-function addAliases(name: string, aliases: string): boolean{
-    const c = DB.getCategory(name);
-    if(!c){
-        return false;
-    }
-    c.aliases = aliases.split(' ').filter(s => s.length > 1).map(s => s.toUpperCase());
-    return DB.updateCategory(c);
+function addAliases(name: string, aliasesStr: string): boolean{
+    const id = DB.getCategory(name).id;
+    const aliases = aliasesStr.split(' ').filter(s => s.length > 1).map(s => s.toUpperCase());
+    return DB.updateCategory(id,{aliases});
 }
 
 function showCategories(): boolean {
@@ -170,7 +167,5 @@ export function main(){
                console.log('no execution');
            }
        });
-
-
 
 }

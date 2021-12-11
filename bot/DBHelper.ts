@@ -27,8 +27,11 @@ export class DBHelper {
     private instance: JSONdb;
 
     constructor() {
-        this.instance = new JSONdb('DB.json');
-        console.log(['db', this.instance.JSON()])
+        this.instance = new JSONdb('DB/DB.json');
+        if(!this.instance.has('0')){
+            this.reset();
+        }
+        console.log(['db', this.instance.JSON()]);
     }
 
     private getEntryById(id: ID): DBEntry {

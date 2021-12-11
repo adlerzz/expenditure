@@ -12,7 +12,9 @@
     "tslib": "^2.3.1",
     "ts-node": "^10.3.0",
     "typescript": "^4.4.3",
-    "simple-json-db": "^1.2.3"
+    "simple-json-db": "^1.2.3",
+    "@types/node": "^16.10.3",
+    "moment": "^2.29.1"
   },
   "devDependencies": {
     "@types/node": "^16.10.3",

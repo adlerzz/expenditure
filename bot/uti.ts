@@ -1,9 +1,8 @@
-import {ID, Command, Record, Category} from "./types";
+import {ID, Command, Record, Category, Descriptor} from './types';
 import {DB} from './app';
+import {DateUtils} from './date-utils';
 
 const USER_ID = '362211767'
-const TODAY = ['today', 'td', 'сегодня', 'сег', 'сёння', 'сн'];
-const YESTERDAY = ['yesterday', 'yd', 'вчера', 'вч', 'учора', 'уч'];
 
 function parseCurrency(text: string): number | null {
     if(text.search(/^\d+([,.]\d+)?$/) === -1){
@@ -12,10 +11,9 @@ function parseCurrency(text: string): number | null {
     return +text.replace(',', '.');
 }
 
-function parseDate(text: string): Date | null {
-
-
-    return null;
+function parseDescriptor(text: string, descriptors: Array<Descriptor>): ID {
+    const descriptor = descriptors.filter( d => text.toUpperCase() === d.value ).pop();
+    return descriptor?.id ?? null;
 }
 
 function parseCommand(inputString: string): Command {
@@ -24,7 +22,7 @@ function parseCommand(inputString: string): Command {
     let result: Command = {} as Command;
 
     const opcodeEnd = rest.indexOf(' ');
-    result.opcode = rest.slice(0, opcodeEnd).toLowerCase();
+    result.opcode = rest.slice(1, opcodeEnd).toLowerCase();
     rest = rest.slice(opcodeEnd + 1);
 
     const paramEnd = rest.indexOf(' ');
@@ -39,34 +37,36 @@ function parseCommand(inputString: string): Command {
     const argEnd = rest.indexOf(':');
 
     if(argEnd === -1){
-        result.argument = rest;
+        result.argument = rest.trim();
         return result;
     }
 
-    result.argument = rest.slice(0, argEnd);
+    result.argument = rest.slice(0, argEnd).trim();
     result.additional = rest.slice(argEnd + 1).trim();
 
     return result;
 }
 
-function parseRecord(inputString: string): Record {
-    const comment = (inputString.match(/\((.*)\)/) ?? []).pop();
+function parseRecord(inputString: string, descriptors: Array<Descriptor>): Record {
+    const comment = (inputString.match(/\((.*)\)/) ?? []).pop()?.trim();
 
-    const part = (comment ? inputString.slice(0,inputString.indexOf('(')): inputString)
+    const parts = (comment ? inputString.slice(0,inputString.indexOf('(')): inputString)
         .split(' ')
         .filter(s => s.length > 0);
-    console.log({part, comment});
-    return {id: "-1", categoryId: "-1", comment, timestamp: new Date(), userId: USER_ID, value: -1} as Record;
+
+    console.log(parts);
+    const categoryId = parts.map( part => parseDescriptor(part, descriptors)).find(it => it);
+    const timestamp = parts.map( part => DateUtils.parseDate(part)).find(it => it) ?? DateUtils.todayDate();
+    const value = parts.map(part => parseCurrency(part)).find(it => it);
+
+
+    return {id: DB.nextSequence(), categoryId, comment, timestamp, userId: USER_ID, value} as Record;
 }
 
-function parse(inputString: string): Record | Command {
-    const trimmed = inputString.trim();
-    return trimmed.startsWith('/') ?
-        parseCommand(trimmed.slice(1)) :
-        parseRecord(trimmed);
-}
-function isCommand(p: Record| Command): p is Command {
-    return (p as Command).opcode !== undefined;
+
+function willBeCommand(text: string): boolean {
+    const trimmed = text.trimStart();
+    return trimmed.startsWith('/')
 }
 
 function executeCommand(command: Command): boolean {
@@ -94,6 +94,7 @@ function executeCommand(command: Command): boolean {
         case 301: result = showCategories(); break;
 
     }
+    console.log({command, result});
     return result;
 }
 
@@ -107,24 +108,31 @@ function createCategory(name: string): boolean {
 function createSubcategory(parent: string, name: string): boolean{
     const p = DB.getCategory(parent);
     if(!p) {
+        console.log('no ' + parent);
         return false;
     }
     if(DB.getCategory(name)){
+        console.log('already ' + name);
         return false;
     }
     return DB.addCategory(name.toUpperCase(),  p.id);
 }
 
 function addAliases(name: string, aliasesStr: string): boolean{
-    const id = DB.getCategory(name).id;
+    const c = DB.getCategory(name);
+    if(!c) {
+        console.log('no ' + name);
+        return false;
+    }
+    const id = c.id;
     const aliases = aliasesStr.split(' ').filter(s => s.length > 1).map(s => s.toUpperCase());
     return DB.updateCategory(id,{aliases});
 }
 
-function getCategoriesDescriptors(): Array<[string, ID]> {
+function getCategoriesDescriptors(): Array<Descriptor> {
     return DB.getCategories()
-        .map(cat => ([cat.id, [cat.name, ...cat.aliases]]))
-        .flatMap( ([id, descs]: [ID, Array<string>]) => descs.map(desc => ([desc, id] as [string, ID])));
+        .map(cat => ( {id: cat.id, descs: [cat.name, ...cat.aliases]}))
+        .flatMap( ({id, descs}) => descs.map(desc => ( {id, value: desc} as Descriptor)));
 }
 
 function showCategories(): boolean {
@@ -149,6 +157,7 @@ export function main(){
         "/add subcat goods: fruits",
         "/add subcat goods: drinks",
         "/add subcat goods: breads",
+        "/add aliases breads: bread",
         "/add subcat goods: cereals and flakes",
         "/add aliases cereals and flakes: cereals flakes",
         "/add subcat goods: candies",
@@ -166,19 +175,29 @@ export function main(){
         "/add aliases psychologists: psy",
         "/show cat",
         "meat  4.80 ( to wine ) ",
-        "mobile 11,80 november",
-        "bread 5.13 02-11",
+        "meals 11,80 november",
+        "bread 5.13 02-nov",
     ];
-    inputStream
-       .map(s => ( {s, p: parse(s)}) )
-       .map( it => {
-           console.log(it);
-           return it.p;
-       })
-       .forEach( it => {
-           if(isCommand(it)){
-               executeCommand(it);
-           }
-       });
-    console.log(getCategoriesDescriptors());
+
+    const parsedCommands = inputStream
+        .filter(s => willBeCommand(s))
+        .map(s => parseCommand(s));
+
+    console.log(parsedCommands);
+
+    parsedCommands.forEach( c => executeCommand(c));
+
+    const descs = getCategoriesDescriptors();
+
+    console.log(['descs', descs]);
+
+    const parsedRecords = inputStream
+        .filter(s => !willBeCommand(s))
+        .map(s => parseRecord(s, descs));
+
+    parsedRecords.forEach( record => DB.addRecord(record));
+
+
+    console.log(parsedRecords);
+
 }

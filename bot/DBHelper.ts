@@ -57,7 +57,7 @@ export class DBHelper {
         return this.getCategoriesWithIndex()[0];
     }
 
-    public getCategory(descriptor: string): Category | null {
+    public getCategory(descriptor: string): Category {
         const D = descriptor.toUpperCase();
         return this.getCategories().find( c => c.name === D || c.aliases.includes(D)) ?? null;
     }
@@ -79,7 +79,7 @@ export class DBHelper {
         }
     }
 
-    public getCategoryByID(id: ID): Category | null {
+    public getCategoryByID(id: ID): Category {
         return this.getEntryById(id).payload as Category ?? null;
     }
 
@@ -105,6 +105,11 @@ export class DBHelper {
             this.updatePayload(id, c);
         }
         return result;
+    }
+
+    public addRecord(record: Record): boolean {
+        this.instance.set(record.id, {id: record.id, type: RECORD_TYPE, payload: record} as DBEntry);
+        return true;
     }
 
     public reset(){

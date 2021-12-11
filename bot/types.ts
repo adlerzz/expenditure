@@ -22,3 +22,8 @@ export interface Command {
     argument?: string;
     additional?: string;
 }
+
+export interface Descriptor {
+    id: ID;
+    value: string;
+}

@@ -27,7 +27,7 @@ export class DBHelper {
     private instance: JSONdb;
 
     constructor() {
-        this.instance = new JSONdb('DB.json');
+        this.instance = new JSONdb('DB/DB.json');
         console.log(['db', this.instance.JSON()])
     }
 

@@ -2,9 +2,9 @@
   "name": "expend-bot",
   "version": "1.0.0",
   "description": "",
-  "main": "app.ts",
+  "main": "bot/app.ts",
   "scripts": {
-    "backend:dev:start": "ts-node -P tsconfig.json app.ts"
+    "backend:dev:start": "ts-node -P tsconfig.json bot/app.ts"
   },
   "dependencies": {
     "telegraf": "^4.4.2",

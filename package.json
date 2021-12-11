@@ -4,7 +4,7 @@
   "description": "",
   "main": "bot/app.ts",
   "scripts": {
-    "start": "npm run backend:dev:start",
+    "start": "ts-node -P tsconfig.json bot/app.ts",
     "backend:dev:start": "ts-node -P tsconfig.json bot/app.ts"
   },
   "dependencies": {

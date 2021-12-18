@@ -40,7 +40,5 @@ console.log(`port: ${process.env.PORT}`);
 
 process.once('SIGINT', finalize);
 process.once('SIGTERM', finalize);
-process.once('SIGKILL', finalize);
-
 
 //uti.main();

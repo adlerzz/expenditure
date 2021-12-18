@@ -36,8 +36,7 @@ async function finalize(){
     console.log('Termination signal');
 }
 
-
-console.log(BOT_TOKEN);
+console.log(`port: ${process.env.PORT}`);
 
 process.once('SIGINT', finalize);
 process.once('SIGTERM', finalize);

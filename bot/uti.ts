@@ -16,12 +16,16 @@ function parseDescriptor(text: string, descriptors: Array<Descriptor>): ID {
     return descriptor?.id ?? null;
 }
 
-function parseCommand(inputString: string): Command {
+export function parseCommand(inputString: string): Command {
     /* /opcode param argument: value*/
     let rest = inputString;
     let result: Command = {} as Command;
 
     const opcodeEnd = rest.indexOf(' ');
+    if(opcodeEnd === -1){
+        result.opcode = rest.slice(1).toLowerCase();
+        return result;
+    }
     result.opcode = rest.slice(1, opcodeEnd).toLowerCase();
     rest = rest.slice(opcodeEnd + 1);
 
@@ -47,7 +51,7 @@ function parseCommand(inputString: string): Command {
     return result;
 }
 
-function parseRecord(inputString: string, descriptors: Array<Descriptor>): Record {
+export function parseRecord(inputString: string, descriptors: Array<Descriptor>): Record {
     const comment = (inputString.match(/\((.*)\)/) ?? []).pop()?.trim();
 
     const parts = (comment ? inputString.slice(0,inputString.indexOf('(')): inputString)
@@ -64,12 +68,12 @@ function parseRecord(inputString: string, descriptors: Array<Descriptor>): Recor
 }
 
 
-function willBeCommand(text: string): boolean {
+export function willBeCommand(text: string): boolean {
     const trimmed = text.trimStart();
     return trimmed.startsWith('/')
 }
 
-function executeCommand(command: Command): boolean {
+export function executeCommand(command: Command): boolean {
     let c: number;
     let result = false;
     switch (command.opcode) {
@@ -77,6 +81,7 @@ function executeCommand(command: Command): boolean {
         case 'edit':   c = 200; break;
         case 'show':   c = 300; break;
         case 'del':    c = 400; break;
+        case 'reset':  c = 500; break
         default:       c = 0;
     }
 
@@ -92,6 +97,7 @@ function executeCommand(command: Command): boolean {
         case 102: result = createSubcategory(command.argument, command.additional); break;
         case 103: result = addAliases(command.argument, command.additional); break;
         case 301: result = showCategories(); break;
+        case 500: result = resetDB(); break;
 
     }
     console.log({command, result});
@@ -129,7 +135,7 @@ function addAliases(name: string, aliasesStr: string): boolean{
     return DB.updateCategory(id,{aliases});
 }
 
-function getCategoriesDescriptors(): Array<Descriptor> {
+export function getCategoriesDescriptors(): Array<Descriptor> {
     return DB.getCategories()
         .map(cat => ( {id: cat.id, descs: [cat.name, ...cat.aliases]}))
         .flatMap( ({id, descs}) => descs.map(desc => ( {id, value: desc} as Descriptor)));
@@ -140,8 +146,9 @@ function showCategories(): boolean {
     return true;
 }
 
-function resetDB(){
+function resetDB(): boolean {
     DB.reset();
+    return true;
 }
 
 export function main(){

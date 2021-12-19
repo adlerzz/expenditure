@@ -1,8 +1,11 @@
 import {Telegraf} from "telegraf";
 import {BOT_TOKEN} from './token';
 import * as uti from './uti';
+import express from "express";
 import {DBHelper} from './DBHelper';
 import {Descriptor} from './types';
+
+const app = express();
 
 const bot = new Telegraf(BOT_TOKEN);
 
@@ -36,9 +39,13 @@ async function finalize(){
     console.log('Termination signal');
 }
 
-console.log(`port: ${process.env.PORT}`);
+const port = process.env.PORT ?? 8700;
 
 process.once('SIGINT', finalize);
 process.once('SIGTERM', finalize);
+
+app.listen(port, () => {
+    console.log(`port: ${port}`);
+});
 
 //uti.main();

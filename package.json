@@ -8,6 +8,7 @@
     "backend:dev:start": "ts-node -P tsconfig.json bot/app.ts"
   },
   "dependencies": {
+    "express": "^4.17.2",
     "telegraf": "^4.4.2",
     "tslib": "^2.3.1",
     "ts-node": "^10.3.0",

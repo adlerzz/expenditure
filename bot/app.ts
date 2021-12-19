@@ -44,6 +44,7 @@ const port = process.env.PORT ?? 8700;
 
 process.once('SIGINT', finalize);
 process.once('SIGTERM', finalize);
+process.once('SIGHUP', finalize);
 
 app.listen(port, () => {
     console.log(`port: ${port}`);

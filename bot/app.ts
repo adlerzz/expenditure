@@ -17,6 +17,7 @@ bot.on('text', context => {
     if (uti.willBeCommand(msg)) {
         const cmd = uti.parseCommand(msg);
         const res = uti.executeCommand(cmd);
+        descs = uti.getCategoriesDescriptors();
         context.reply( JSON.stringify({cmd, res}) );
     } else {
         const rec = uti.parseRecord(msg, descs);
@@ -48,4 +49,3 @@ app.listen(port, () => {
     console.log(`port: ${port}`);
 });
 
-//uti.main();

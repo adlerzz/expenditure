@@ -1,52 +1,73 @@
 import {Telegraf} from "telegraf";
-import {BOT_TOKEN} from './token';
 import * as uti from './uti';
 import express from "express";
-import {DBHelper} from './DBHelper';
+import {DBJSONAdapter} from './db/DBJSONAdapter';
 import {Descriptor} from './types';
+import {main} from './uti';
+import {DBAdapter} from './db/DBAdapter';
 
 const app = express();
 
-const bot = new Telegraf(BOT_TOKEN);
+const bot = new Telegraf(process.env.TOKEN);
+const botStarted = false;
 
-export let DB = new DBHelper();
-let descs: Array<Descriptor> = uti.getCategoriesDescriptors();
+const CHAT_ID = '286454480';
 
-bot.on('text', context => {
+export let DB = new DBJSONAdapter();
+let descs: Array<Descriptor>;
+
+bot.on('text', async context => {
     const msg = context.message.text;
+    const messageId = context.message.message_id;
     if (uti.willBeCommand(msg)) {
         const cmd = uti.parseCommand(msg);
         const res = uti.executeCommand(cmd);
-        descs = uti.getCategoriesDescriptors();
+        descs = await uti.getCategoriesDescriptors();
         context.reply( JSON.stringify({cmd, res}) );
     } else {
-        const rec = uti.parseRecord(msg, descs);
+        const rec = await uti.parseRecord(msg, descs, messageId);
         rec.userId = context.message.from.username;
         const res = DB.addRecord(rec);
         context.reply(JSON.stringify({rec, res}));
     }
+    const msgId = context.message.message_id;
+    console.log(msgId);
+});
 
+bot.on('edited_message', context => {
+    const msg = context.update.edited_message['text'];
+    const msgId = context.update.edited_message.message_id;
+    console.log({msg, msgId});
 })
 
-bot.launch();
+//botStarted = await start();
 
-bot.telegram.sendMessage('286454480', 'Me on');
-console.log("App started");
+main();
 
-async function finalize(){
-    await bot.telegram.sendMessage('286454480', 'Me off');
-    bot.stop('Termination signal');
-    DB.endSession();
-    console.log('Termination signal');
+async function start(): Promise<boolean>{
+
+    descs = await uti.getCategoriesDescriptors();
+
+    await bot.launch();
+
+    await bot.telegram.sendMessage(CHAT_ID, 'Me on');
+    console.log("App started");
+    return true;
 }
 
-const port = process.env.PORT ?? 8700;
+async function finalize(s){
+    if (botStarted) {
+        await bot.telegram.sendMessage(CHAT_ID, 'Me off');
+        bot.stop('Termination signal ' + s);
+    }
+    DB.endSession();
+    console.log('Termination signal ' + s);
+}
 
 process.once('SIGINT', finalize);
 process.once('SIGTERM', finalize);
 process.once('SIGHUP', finalize);
 
-app.listen(port, () => {
-    console.log(`port: ${port}`);
+app.listen(process.env.PORT, () => {
+    console.log(`port: ${process.env.PORT}`);
 });
-

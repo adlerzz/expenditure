@@ -1,6 +1,7 @@
 import {ID, Command, Record, Category, Descriptor} from './types';
 import {DB} from './app';
 import {DateUtils} from './date-utils';
+import {DBAdapter} from './db/DBAdapter';
 
 const USER_ID = '362211767'
 
@@ -51,7 +52,7 @@ export function parseCommand(inputString: string): Command {
     return result;
 }
 
-export function parseRecord(inputString: string, descriptors: Array<Descriptor>): Record {
+export async function parseRecord(inputString: string, descriptors: Array<Descriptor>, messageId: number): Promise<Record> {
     const comment = (inputString.match(/\((.*)\)/) ?? []).pop()?.trim();
 
     const parts = (comment ? inputString.slice(0,inputString.indexOf('(')): inputString)
@@ -64,7 +65,15 @@ export function parseRecord(inputString: string, descriptors: Array<Descriptor>)
     const value = parts.map(part => parseCurrency(part)).find(it => it);
 
 
-    return {id: DB.nextSequence(), categoryId, comment, timestamp, userId: USER_ID, value} as Record;
+    return {
+        id: await DB.nextRecordSequence(),
+        categoryId,
+        comment,
+        timestamp,
+        userId: USER_ID,
+        value,
+        messageId
+    } as Record;
 }
 
 
@@ -73,7 +82,7 @@ export function willBeCommand(text: string): boolean {
     return trimmed.startsWith('/')
 }
 
-export function executeCommand(command: Command): boolean {
+export async function executeCommand(command: Command): Promise<boolean> {
     let c: number;
     let result = false;
     switch (command.opcode) {
@@ -93,39 +102,52 @@ export function executeCommand(command: Command): boolean {
     }
 
     switch (c) {
-        case 101: result = createCategory(command.argument); break;
-        case 102: result = createSubcategory(command.argument, command.additional); break;
-        case 103: result = addAliases(command.argument, command.additional); break;
-        case 301: result = showCategories(); break;
-        case 500: result = resetDB(); break;
+        case 101: result = await createCategory(command.argument); break;
+        case 102: result = await createSubcategory(command.argument, command.additional); break;
+        case 103: result = await addAliases(command.argument, command.additional); break;
+        case 301: result = await showCategories(); break;
+        case 303: result = await showRecords(); break;
+        case 500: result = await resetDB(); break;
 
     }
     console.log({command, result});
     return result;
 }
 
-function createCategory(name: string): boolean {
-    if(DB.getCategory(name)){
+async function createCategory(name: string): Promise<boolean> {
+    if(await DB.getCategoryBy(name)){
         return false;
     }
-    return DB.addCategory(name.toUpperCase(), "0");
+    const category = {
+        id: await DB.nextCategorySequence(),
+        parentId: '0',
+        name: name.toUpperCase(),
+        aliases: []
+    }
+    return await DB.addCategory(category);
 }
 
-function createSubcategory(parent: string, name: string): boolean{
-    const p = DB.getCategory(parent);
+async function createSubcategory(parent: string, name: string): Promise<boolean>{
+    const p = await DB.getCategoryBy(parent);
     if(!p) {
         console.log('no ' + parent);
         return false;
     }
-    if(DB.getCategory(name)){
+    if(await DB.getCategoryBy(name)){
         console.log('already ' + name);
         return false;
     }
-    return DB.addCategory(name.toUpperCase(),  p.id);
+    const category = {
+        id: await DB.nextCategorySequence(),
+        parentId: p.id,
+        name: name.toUpperCase(),
+        aliases: []
+    }
+    return DB.addCategory(category);
 }
 
-function addAliases(name: string, aliasesStr: string): boolean{
-    const c = DB.getCategory(name);
+async function addAliases(name: string, aliasesStr: string): Promise<boolean>{
+    const c = await DB.getCategoryBy(name);
     if(!c) {
         console.log('no ' + name);
         return false;
@@ -135,24 +157,29 @@ function addAliases(name: string, aliasesStr: string): boolean{
     return DB.updateCategory(id,{aliases});
 }
 
-export function getCategoriesDescriptors(): Array<Descriptor> {
-    return DB.getCategories()
+export async function getCategoriesDescriptors(): Promise<Array<Descriptor>> {
+    const categories = await DB.getCategories();
+    return categories
         .map(cat => ( {id: cat.id, descs: [cat.name, ...cat.aliases]}))
         .flatMap( ({id, descs}) => descs.map(desc => ( {id, value: desc} as Descriptor)));
 }
 
-function showCategories(): boolean {
-    console.log(DB.getCategories());
+async function showCategories(): Promise<boolean> {
+    console.log(await DB.getCategories());
     return true;
 }
 
-function resetDB(): boolean {
-    DB.reset();
+async function showRecords(): Promise<boolean> {
+    console.log(await DB.getRecords());
     return true;
 }
 
-export function main(){
-    resetDB();
+async function resetDB(): Promise<boolean> {
+    return DB.reset();
+}
+
+export async function main(){
+    await resetDB();
     const inputStream = [
         "/add cat Goods ",
         "/add subcat goods: meat and fish",
@@ -184,6 +211,7 @@ export function main(){
         "meat  4.80 ( to wine ) ",
         "meals 11,80 november",
         "bread 5.13 02-nov",
+        "service 1100 dec"
     ];
 
     const parsedCommands = inputStream
@@ -194,17 +222,20 @@ export function main(){
 
     parsedCommands.forEach( c => executeCommand(c));
 
-    const descs = getCategoriesDescriptors();
+    const descs = await getCategoriesDescriptors();
 
     console.log(['descs', descs]);
 
-    const parsedRecords = inputStream
+    const parsedRecords = await Promise.all(inputStream
         .filter(s => !willBeCommand(s))
-        .map(s => parseRecord(s, descs));
+        .map(async s => await parseRecord(s, descs, null)));
 
     parsedRecords.forEach( record => DB.addRecord(record));
 
-
     console.log(parsedRecords);
 
+
+    const aDB = new DBAdapter();
+    const cats = await aDB.getCategories();
+    console.log()
 }

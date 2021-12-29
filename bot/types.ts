@@ -7,6 +7,8 @@ export interface Category {
     aliases?: string[];
 }
 
+export type CategoryUpdate = Partial<Omit<Category, 'id'>>;
+
 export interface Record {
     id: ID;
     categoryId: ID;
@@ -14,7 +16,10 @@ export interface Record {
     value: number;
     timestamp: Date;
     comment: String;
+    messageId: number;
 }
+
+export type RecordUpdate = Partial<Omit<Record, 'id' | 'messageId' | 'userId'>>;
 
 export interface Command {
     opcode: string;
@@ -22,6 +27,15 @@ export interface Command {
     argument?: string;
     additional?: string;
 }
+
+export interface User {
+    id: ID;
+    nickname: string;
+    role: string;
+    associatedId: string;
+}
+
+export type UserUpdate = Partial<Omit<User, 'id' | 'associatedId'>>;
 
 export interface Descriptor {
     id: ID;

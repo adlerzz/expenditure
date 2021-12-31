@@ -13,7 +13,8 @@ const botStarted = false;
 
 const CHAT_ID = '286454480';
 
-export let DB = new DBJSONAdapter();
+//export let DB = new DBJSONAdapter();
+export let DB = new DBAdapter();
 let descs: Array<Descriptor>;
 
 bot.on('text', async context => {
@@ -60,7 +61,7 @@ async function finalize(s){
         await bot.telegram.sendMessage(CHAT_ID, 'Me off');
         bot.stop('Termination signal ' + s);
     }
-    DB.endSession();
+    //DB.endSession();
     console.log('Termination signal ' + s);
 }
 

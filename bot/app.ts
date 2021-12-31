@@ -1,7 +1,6 @@
 import {Telegraf} from "telegraf";
 import * as uti from './uti';
 import express from "express";
-import {DBJSONAdapter} from './db/DBJSONAdapter';
 import {Descriptor} from './types';
 import {main} from './uti';
 import {DBAdapter} from './db/DBAdapter';
@@ -13,8 +12,15 @@ const botStarted = false;
 
 const CHAT_ID = '286454480';
 
-//export let DB = new DBJSONAdapter();
-export let DB = new DBAdapter();
+const dbOptions = process.env.DATABASE_URL ? {
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
+} : undefined;
+
+
+export const DB = new DBAdapter(dbOptions);
 let descs: Array<Descriptor>;
 
 bot.on('text', async context => {

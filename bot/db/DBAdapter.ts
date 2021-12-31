@@ -6,9 +6,9 @@ export class DBAdapter extends DBInterface {
 
     private client: Client;
 
-    constructor() {
+    constructor(dbOptions?: object) {
         super();
-        this.client = new Client();
+        this.client = new Client(dbOptions);
         this.client.connect();
     }
 

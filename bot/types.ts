@@ -8,6 +8,7 @@ export interface Category {
 }
 
 export type CategoryUpdate = Partial<Omit<Category, 'id'>>;
+export type CategoryCreate = Omit<Category, 'id'>;
 
 export interface Record {
     id: ID;
@@ -20,6 +21,7 @@ export interface Record {
 }
 
 export type RecordUpdate = Partial<Omit<Record, 'id' | 'messageId' | 'userId'>>;
+export type RecordCreate = Omit<Record, 'id'>;
 
 export interface Command {
     opcode: string;
@@ -36,6 +38,7 @@ export interface User {
 }
 
 export type UserUpdate = Partial<Omit<User, 'id' | 'associatedId'>>;
+export type UserCreate = Omit<User, 'id'>;
 
 export interface Descriptor {
     id: ID;

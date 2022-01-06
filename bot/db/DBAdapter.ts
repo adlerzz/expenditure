@@ -1,6 +1,16 @@
 import {DBInterface} from './DBInterface';
 import {Client} from 'pg';
-import {Category, CategoryUpdate, ID, Record, RecordUpdate, User, UserUpdate} from '../types';
+import {
+    Category,
+    CategoryCreate,
+    CategoryUpdate,
+    ID,
+    Record,
+    RecordCreate,
+    RecordUpdate,
+    User, UserCreate,
+    UserUpdate
+} from '../types';
 
 export class DBAdapter extends DBInterface {
 
@@ -42,10 +52,10 @@ export class DBAdapter extends DBInterface {
         }) as User;
     }
 
-    public async addCategory(category: Category): Promise<boolean> {
+    public async addCategory(category: CategoryCreate): Promise<boolean> {
         const query = `INSERT INTO CATEGORIES (PARENT_ID, NAME, ALIASES) VALUES ($1, $2, $3)`;
         const result = await this.client.query(query, [category.parentId, category.name, category.aliases]);
-        console.log(result);
+        // console.log(result);
         await this.client.query(`COMMIT`);
         return result;
     }
@@ -54,15 +64,15 @@ export class DBAdapter extends DBInterface {
         const query = `SELECT * FROM CATEGORIES`;
         const select = await this.client.query(query);
         const result = select.rows.map(DBAdapter.DBCastToCategory);
-        console.log(result);
+        // console.log(result);
         return result;
     }
 
-    public async getCategoryBy(descriptor: string): Promise<Category> {
+    public async getCategoryBy(descriptor: string): Promise<Category|null> {
         const query = `SELECT * FROM CATEGORIES WHERE NAME = $1 OR $1 = ANY (ALIASES)`;
         const select = await this.client.query(query, [descriptor.toUpperCase()]);
-        const result = select.rows.map(DBAdapter.DBCastToCategory).pop();
-        console.log(result);
+        const result = select.rows.map(DBAdapter.DBCastToCategory).pop() ?? null;
+        // console.log(result);
         return result;
     }
 
@@ -70,7 +80,7 @@ export class DBAdapter extends DBInterface {
         const query = `SELECT * FROM CATEGORIES WHERE ID = $1`;
         const select = await this.client.query(query, [id]);
         const result = select.rows.map(DBAdapter.DBCastToCategory).pop();
-        console.log(result);
+        // console.log(result);
         return result;
     }
 
@@ -86,33 +96,33 @@ export class DBAdapter extends DBInterface {
         const set = fields.map( field => `${field.property} = ${field.value}`).join(', ');
         const query = `UPDATE CATEGORIES SET ${set} WHERE ID = $1`;
         const result = await this.client.query(query, [id]);
-        console.log(result);
+        // console.log(result);
         await this.client.query(`COMMIT`);
         return result;
     }
 
-    public async addRecord(record: Record): Promise<boolean> {
+    public async addRecord(record: RecordCreate): Promise<boolean> {
         const query = `INSERT INTO RECORDS (CATEGORY_ID, USER_ID, VALUE, TIMESTAMP, COMMENT, MESSAGE_ID) 
                         VALUES ($1, $2, $3::numeric::money, $4, $5, $6)`;
         const result = await this.client.query(query, [record.categoryId, record.userId, record.value, record.timestamp, record.comment, record.messageId]);
-        console.log(result);
+        // console.log(result);
         await this.client.query(`COMMIT`);
-        return result;
+        return !!result;
     }
 
     public async getRecords(): Promise<Array<Record>> {
         const query = `SELECT * FROM RECORDS`;
         const select = await this.client.query(query);
         const result = select.rows.map(DBAdapter.DBCastToRecord);
-        console.log(result);
-        return result;
+        // console.log(result);
+        return result ?? [];
     }
 
     public async getRecordById(id: ID): Promise<Record> {
         const query = `SELECT * FROM RECORDS WHERE ID = $1`;
         const select = await this.client.query(query, [id]);
         const result = select.rows.map(DBAdapter.DBCastToRecord).pop();
-        console.log(result);
+        // console.log(result);
         return result;
     }
 
@@ -120,7 +130,7 @@ export class DBAdapter extends DBInterface {
         const query = `SELECT * FROM RECORDS WHERE MESSAGE_ID = $1`;
         const select = await this.client.query(query, [messageId]);
         const result = select.rows.map(DBAdapter.DBCastToRecord).pop();
-        console.log(result);
+        // console.log(result);
         return result;
     }
 
@@ -131,39 +141,44 @@ export class DBAdapter extends DBInterface {
         const set = fields.map( field => `${field.property} = ${field.value}`).join(', ');
         const query = `UPDATE RECORDS SET ${set} WHERE ID = $1`;
         const result = await this.client.query(query, [id]);
-        console.log(result);
+        // console.log(result);
         await this.client.query(`COMMIT`);
-        return result;
+        return !!result;
     }
 
-    public async addUser(user: User): Promise<boolean> {
+    public async addUser(user: UserCreate): Promise<boolean> {
         const query = `INSERT INTO USERS (NICKNAME, ROLE, ASSOCIATED_ID) VALUES ($1, $2, $3)`;
         const result = await this.client.query(query, [user.nickname, user.role, user.associatedId]);
-        console.log(result);
+        // console.log(result);
         await this.client.query(`COMMIT`);
-        return true;
+        return !!result;
     }
 
     public async getUsers(): Promise<Array<User>> {
         const query = `SELECT * FROM USERS`;
         const select = await this.client.query(query);
         const result = select.rows.map(DBAdapter.DBCastToUser);
-        console.log(result);
+        // console.log(result);
         return result;
     }
 
-    public async getUserBy(field: "associatedId" | "nickname", value: string): Promise<User> {
+    public async getUsersBy(role: string): Promise<Array<User>>{
+        const query = `SELECT * FROM USERS WHERE ROLE = $1`;
+        const select = await this.client.query(query, [role]);
+        const result = select.rows.map(DBAdapter.DBCastToUser);
+        // console.log(result);
+        return result;
+    }
+
+    public async getUserBy(field: "associatedId" | "nickname", value: string|number): Promise<User> {
         const column = {
             'associatedId': 'associated_id',
             'nickname': 'nickname'
         }[field];
-        if(!column){
-            return null;
-        }
         const query = `SELECT * FROM USERS WHERE ${column} = $1`;
         const select = await this.client.query(query, [value]);
         const result = select.rows.map(DBAdapter.DBCastToUser).pop();
-        console.log(result);
+        // console.log(result);
         return result;
     }
 
@@ -171,7 +186,7 @@ export class DBAdapter extends DBInterface {
         const query = `SELECT * FROM USERS WHERE ID = $1`;
         const select = await this.client.query(query, [id]);
         const result = select.rows.map(DBAdapter.DBCastToUser).pop();
-        console.log(result);
+        // console.log(result);
         return result;
     }
 
@@ -183,22 +198,10 @@ export class DBAdapter extends DBInterface {
         const set = fields.map( field => `${field.property} = ${field.value}`).join(', ');
         const query = `UPDATE USERS SET ${set} WHERE ID = $1`;
         const result = await this.client.query(query, [id]);
-        console.log(result);
+        // console.log(result);
         await this.client.query(`COMMIT`);
 
-        return result;
-    }
-
-    nextCategorySequence(): Promise<ID> {
-        return Promise.resolve(undefined);
-    }
-
-    nextRecordSequence(): Promise<ID> {
-        return Promise.resolve(undefined);
-    }
-
-    nextUserSequence(): Promise<ID> {
-        return Promise.resolve(undefined);
+        return !!result;
     }
 
     public async reset(): Promise<boolean> {

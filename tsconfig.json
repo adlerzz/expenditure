@@ -5,7 +5,8 @@
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "strictNullChecks": true
   },
   "files": true,
   "exclude": [

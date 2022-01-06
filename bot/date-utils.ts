@@ -53,11 +53,11 @@ export class DateUtils {
             return null;
         }
 
-        return DateUtils.parseMonth(text)?.toDate();
+        return DateUtils.parseMonth(text)?.toDate() ?? null;
 
     }
 
-    private static parseMonth(text: string): moment.Moment {
+    private static parseMonth(text: string): moment.Moment | null {
         const month = MONTHS.map(m => m.includes(text.toUpperCase())).findIndex(p => p);
         if(month === -1){
             return null;
@@ -70,7 +70,7 @@ export class DateUtils {
         return am;
     }
 
-    private static parseDay(text): number {
+    private static parseDay(text): number | null {
         return (text.match(/^(0?[1-9]|[12][0-9]|3[01])$/) ?? []).length !== 0 ? +text : null;
     }
 

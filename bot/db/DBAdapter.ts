@@ -11,6 +11,7 @@ import {
     User, UserCreate,
     UserUpdate
 } from '../types';
+import {DateUtils} from '../date-utils';
 
 export class DBAdapter extends DBInterface {
 
@@ -138,8 +139,18 @@ export class DBAdapter extends DBInterface {
         const fields = Object.entries(record).map(([property, value]) => ({property, value}))
             .filter( entry => entry.value !== undefined)
 
+        const df = fields.find(field => field.property === 'timestamp');
+        if(df) {
+            const date =  DateUtils.formatDate(df.value as Date);
+            df.value = `timestamp '${date}' at time zone 'utc'`;
+        }
+        const cf = fields.find(field => field.property === 'categoryId');
+        if(cf) {
+            cf.property = 'category_id';
+        }
         const set = fields.map( field => `${field.property} = ${field.value}`).join(', ');
         const query = `UPDATE RECORDS SET ${set} WHERE ID = $1`;
+        console.log({query});
         const result = await this.client.query(query, [id]);
         // console.log(result);
         await this.client.query(`COMMIT`);

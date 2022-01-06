@@ -67,7 +67,7 @@ export class DateUtils {
         if(month > DateUtils.today().month()) {
             am.subtract(1, 'year');
         }
-        return am;
+        return am.startOf('month');
     }
 
     private static parseDay(text): number | null {

@@ -1,7 +1,8 @@
 import {Telegraf} from 'telegraf';
 import * as cpu from './CommandProcessor';
+import * as parsers from './parsers';
 import express from "express";
-import {Command, Descriptor, RecordCreate} from './types';
+import {Command, Descriptor, RecordCreate, RecordUpdate} from './types';
 import {DBAdapter} from './db/DBAdapter';
 
 const app = express();
@@ -23,35 +24,49 @@ export const DB = new DBAdapter(dbOptions);
 let descs: Array<Descriptor>;
 
 async function handleCommand(msg: string): Promise<[Command, boolean]>{
-    const parsed = cpu.parseCommand(msg);
+    const parsed = parsers.parseCommand(msg);
     const result = await cpu.executeCommand(parsed);
     descs = await cpu.getCategoriesDescriptors();
     return [parsed, result];
 }
 
 async function handleRecord(msg: string, userId: string, messageId: number): Promise<[RecordCreate|null, boolean]> {
-    const parsed = await cpu.parseRecord(msg, descs, messageId, userId);
+    const parsed = await parsers.parseRecord(msg, descs, messageId, userId);
     const result = parsed ? await DB.addRecord(parsed) : false;
     return [parsed, result];
 }
 
+async function handleRecordUpdate(msg: string, msgId: number): Promise<[RecordUpdate | null, boolean]>{
+    const rec = await DB.getRecordByMessageId(msgId);
+    const updates = await parsers.parseRecordUpdate(msg, descs);
+    console.log({updates});
+    if(!updates){
+        return [null, false];
+    }
+    const result = await DB.updateRecord(rec.id, updates);
+    return [updates, result];
+}
+
 bot.on('text', async context => {
-    const msg = context.message.text;
+    const msgText = context.message.text;
     const messageId = context.message.message_id;
     const user = await DB.getUserBy("associatedId", context.message.from.id ?? -1);
 
-    const [parsed, result] = cpu.willBeCommand(msg)
-        ? await handleCommand(msg)
-        : await handleRecord(msg, user.id, messageId);
+    const [parsed, result] = parsers.willBeCommand(msgText)
+        ? await handleCommand(msgText)
+        : await handleRecord(msgText, user.id, messageId);
 
     context.reply( JSON.stringify({parsed, result}) );
-    console.log(messageId);
+    console.log({parsed, result});
 });
 
-bot.on('edited_message', context => {
-    const msg = context.update.edited_message['text'];
-    const msgId = context.update.edited_message.message_id;
-    console.log({msg, msgId, context});
+bot.on('edited_message', async context => {
+    const msgText = context.update.edited_message['text'] as string;
+    const messageId = context.update.edited_message.message_id;
+
+    const [updates, result] = await handleRecordUpdate(msgText, messageId);
+    context.reply( JSON.stringify({updates, result}) );
+    console.log({updates, result});
 });
 
 (async () => {
@@ -73,9 +88,9 @@ async function start(): Promise<boolean>{
 
 async function finalize(s){
     if (botStarted) {
+        botStarted = false;
         await bot.telegram.sendMessage(CHAT_ID, 'Me off');
         bot.stop('Termination signal ' + s);
-        botStarted = false;
     }
     console.log('Termination signal ' + s);
 }

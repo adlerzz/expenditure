@@ -1,7 +1,8 @@
 import {Command, Descriptor} from './types';
 import {DB} from './app';
+import {createHTML} from './reports/render';
 
-export async function executeCommand(command: Command): Promise<boolean> {
+export async function executeCommand(command: Command): Promise<boolean|object> {
 
     const fullcommand = command.opcode + (command.param ? ' ' + command.param : '' );
 
@@ -10,10 +11,16 @@ export async function executeCommand(command: Command): Promise<boolean> {
         'add aliases' : async () => await addAliases(command.argument!, command.additional!),
         'show cat' :    async () => await showCategories(),
         'show rec' :    async () => await showRecords(),
+        'do file' :     async () => await doFile(),
         'reset' :       async () => await resetDB()
     };
 
-    const result = await transitions[fullcommand]();
+    const f = transitions[fullcommand];
+    if(!f){
+        console.log(`Bad command ${fullcommand}`);
+        return false;
+    }
+    const result = await f();
 
     console.log({command, result});
     return result;
@@ -84,6 +91,16 @@ async function showCategories(): Promise<boolean> {
 async function showRecords(): Promise<boolean> {
     console.log(await DB.getRecords());
     return true;
+}
+
+async function doFile(): Promise<object> {
+    const [filepath, filename] = await createHTML();
+    return {
+        type: 'html',
+        html: {
+            filepath, filename
+        }
+    };
 }
 
 export async function resetDB(): Promise<boolean> {

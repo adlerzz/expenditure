@@ -1,5 +1,6 @@
 import {DB} from './app';
 import * as cpu from './CommandProcessor';
+import * as parsers from './parsers';
 
 const USER_ID = '1';
 
@@ -175,8 +176,8 @@ export async function main(){
     ];
 
     const parsedCommands = inputStream
-        .filter(s => cpu.willBeCommand(s))
-        .map(s => cpu.parseCommand(s));
+        .filter(s => parsers.willBeCommand(s))
+        .map(s => parsers.parseCommand(s));
 
     // console.log(parsedCommands);
 
@@ -189,8 +190,8 @@ export async function main(){
     console.log(['descs', descs]);
 
     const parsedRecords = await Promise.all(inputStream
-        .filter(s => !cpu.willBeCommand(s))
-        .map(async s => await cpu.parseRecord(s, descs, -12, USER_ID))
+        .filter(s => !parsers.willBeCommand(s))
+        .map(async s => await parsers.parseRecord(s, descs, -12, USER_ID))
         .filter(it => it));
 
     parsedRecords.forEach( record => DB.addRecord(record!));

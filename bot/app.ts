@@ -4,6 +4,8 @@ import * as parsers from './parsers';
 import express from "express";
 import {Command, Descriptor, RecordCreate, RecordUpdate} from './types';
 import {DBAdapter} from './db/DBAdapter';
+import {InputFile} from 'telegraf/typings/core/types/typegram';
+import * as fs from 'fs';
 
 const app = express();
 
@@ -23,7 +25,7 @@ const dbOptions = process.env.DATABASE_URL ? {
 export const DB = new DBAdapter(dbOptions);
 let descs: Array<Descriptor>;
 
-async function handleCommand(msg: string): Promise<[Command, boolean]>{
+async function handleCommand(msg: string): Promise<[Command, boolean|object]>{
     const parsed = parsers.parseCommand(msg);
     const result = await cpu.executeCommand(parsed);
     descs = await cpu.getCategoriesDescriptors();
@@ -56,7 +58,20 @@ bot.on('text', async context => {
         ? await handleCommand(msgText)
         : await handleRecord(msgText, user.id, messageId);
 
-    context.reply( JSON.stringify({parsed, result}) );
+    if(typeof result !== 'boolean') {
+        switch(result['type']){
+            case 'html': {
+                // await context.reply(result['html']);
+                const {filepath, filename} = result['html'];
+                const rs = fs.createReadStream(filepath);
+                await context.replyWithDocument({source: rs, filename} as InputFile)
+
+            } break;
+        }
+
+    } else {
+        context.reply(JSON.stringify({parsed, result}));
+    }
     console.log({parsed, result});
 });
 
@@ -65,6 +80,7 @@ bot.on('edited_message', async context => {
     const messageId = context.update.edited_message.message_id;
 
     const [updates, result] = await handleRecordUpdate(msgText, messageId);
+
     context.reply( JSON.stringify({updates, result}) );
     console.log({updates, result});
 });

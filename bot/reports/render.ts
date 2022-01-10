@@ -12,7 +12,8 @@ export async function createHTML() : Promise<[string, string]> {
     }
 
     const filepath = path.join(dir, filename);
-    console.log(`filepath: ${filepath}`)
+    const fullfilepath = path.resolve(filepath);
+    console.log(`filepath: ${fullfilepath}`);
     const s = `
 <!DOCTYPE html>
 <html> 

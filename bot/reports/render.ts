@@ -4,7 +4,15 @@ import {DB} from '../app';
 
 export async function createHTML() : Promise<[string, string]> {
     const filename = "report.html";
-    const filepath = path.normalize('./web/' + filename);
+    const dir = path.normalize('./web');
+
+    if(!fs.existsSync(dir)){
+        fs.mkdirSync(dir);
+        console.log(`create directory "${dir}"`);
+    }
+
+    const filepath = path.join(dir, filename);
+    console.log(`filepath: ${filepath}`)
     const s = `
 <!DOCTYPE html>
 <html> 

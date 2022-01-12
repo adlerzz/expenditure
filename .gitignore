@@ -3,7 +3,6 @@ node_modules
 .env
 
 
-/web
 package-lock.json
 .idea
 .vscode

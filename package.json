@@ -10,6 +10,7 @@
   "dependencies": {
     "dotenv": "^10.0.0",
     "express": "^4.17.2",
+    "htmling": "^0.0.8",
     "pg": "^8.7.1",
     "telegraf": "^4.4.2",
     "tslib": "^2.3.1",

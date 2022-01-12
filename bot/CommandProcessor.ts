@@ -94,12 +94,9 @@ async function showRecords(): Promise<boolean> {
 }
 
 async function doFile(): Promise<object> {
-    const [filepath, filename] = await createHTML();
     return {
-        type: 'html',
-        html: {
-            filepath, filename
-        }
+        type: 'url',
+        url: process.env['DOMAIN'] + 'web/info'
     };
 }
 

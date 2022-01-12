@@ -1,11 +1,12 @@
 import {Telegraf} from 'telegraf';
 import * as cpu from './CommandProcessor';
 import * as parsers from './parsers';
+import * as xpt from 'htmling';
 import express from "express";
 import {Command, Descriptor, RecordCreate, RecordUpdate} from './types';
 import {DBAdapter} from './db/DBAdapter';
-import {InputFile} from 'telegraf/typings/core/types/typegram';
-import * as fs from 'fs';
+import * as path from 'path';
+import {createHTML} from './reports/render';
 
 const app = express();
 
@@ -60,11 +61,10 @@ bot.on('text', async context => {
 
     if(typeof result !== 'boolean') {
         switch(result['type']){
-            case 'html': {
+            case 'url': {
                 // await context.reply(result['html']);
-                const {filepath, filename} = result['html'];
-                const rs = fs.createReadStream(filepath);
-                await context.replyWithDocument({source: rs, filename} as InputFile)
+                const url = result['url'];
+                await context.reply(url, {entities: [{type: 'url', length: url.length, offset: 0}]});
 
             } break;
         }
@@ -114,6 +114,29 @@ async function finalize(s){
 process.once('SIGINT', finalize);
 process.once('SIGTERM', finalize);
 process.once('SIGHUP', finalize);
+
+const staticPath = './web';
+app.set('views', staticPath);
+app.set('view engine', 'xpt');
+app.use(express.static(staticPath));
+
+console.log(path.resolve('./web') + path.sep );
+
+app.engine('xpt', xpt.express( path.resolve(staticPath) + path.sep));
+
+
+app.get('/web/info', async (req, res) => {
+    console.log(req.query);
+
+    const data = await createHTML();
+    console.log(data);
+    // res.type('.html').render('info/info');
+    res.render('info/info', {
+        outcomes: data['outcomesData'],
+        incomes: data['incomesData']
+    });
+
+});
 
 app.listen(process.env.PORT, () => {
     console.log(`port: ${process.env.PORT}`);

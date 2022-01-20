@@ -13,6 +13,20 @@ function parseDescriptor(text: string, descriptors: Array<Descriptor>): ID | nul
     return descriptor?.id ?? null;
 }
 
+export async function createRecordStepByStep(inputString: string, categoryId: ID, userId: ID): Promise<RecordCreate|null> {
+    const comment = (inputString.match(/\((.*)\)/) ?? []).pop()?.trim();
+
+    const parts = (comment ? inputString.slice(0,inputString.indexOf('(')): inputString)
+        .split(' ')
+        .filter(s => s.length > 0);
+
+    const timestamp = parts.map( part => DateUtils.parseDate(part)).find(it => it) ?? DateUtils.todayDate();
+    const value = parts.map(part => parseCurrency(part)).find(it => it);
+
+    return { categoryId, comment, timestamp,
+        userId, value, messageId: -1 } as RecordCreate;
+}
+
 export async function parseRecord(inputString: string, descriptors: Array<Descriptor>, messageId: number, userId: ID): Promise<RecordCreate|null> {
     const comment = (inputString.match(/\((.*)\)/) ?? []).pop()?.trim();
 
@@ -56,7 +70,7 @@ export function willBeCommand(text: string): boolean {
 
 
 export function parseCommand(inputString: string): Command {
-    /* /opcode param argument: value*/
+    /* /opcode argument: value*/
     let rest = inputString;
     let result: Command = {} as Command;
 
@@ -66,16 +80,8 @@ export function parseCommand(inputString: string): Command {
         return result;
     }
     result.opcode = rest.slice(1, opcodeEnd).toLowerCase();
+
     rest = rest.slice(opcodeEnd + 1);
-
-    const paramEnd = rest.indexOf(' ');
-    if (paramEnd === -1) {
-        result.param = rest;
-        return result;
-    }
-
-    result.param = rest.slice(0, paramEnd).toLowerCase();
-    rest = rest.slice(paramEnd + 1);
 
     const argEnd = rest.indexOf(':');
 

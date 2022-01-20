@@ -25,7 +25,6 @@ export type RecordCreate = Omit<Record, 'id'>;
 
 export interface Command {
     opcode: string;
-    param?: string;
     argument?: string;
     additional?: string;
 }

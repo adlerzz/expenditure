@@ -6,9 +6,12 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "outDir": "./dist/bot/"
   },
-  "files": true,
+  "include": [
+    "bot/**/*"
+  ],
   "exclude": [
     "node_modules"
   ]

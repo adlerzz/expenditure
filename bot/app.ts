@@ -3,17 +3,19 @@ import * as cpu from './CommandProcessor';
 import * as parsers from './parsers';
 import * as xpt from 'htmling';
 import express from "express";
-import {Command, Descriptor, RecordCreate, RecordUpdate} from './types';
+import {Command, Descriptor, ID, RecordCreate, RecordUpdate} from './types';
 import {DBAdapter} from './db/DBAdapter';
 import * as path from 'path';
 import {createHTML} from './reports/render';
+import {executeCommand} from './CommandProcessor';
+import {setupRouters} from './reports/routers';
 
 const app = express();
 
 const bot = new Telegraf(process.env.TOKEN ?? '');
 let botStarted = false;
 
-const CHAT_ID = '286454480';
+const SYSADM_CHAT_ID = '286454480';
 
 const dbOptions = process.env.DATABASE_URL ? {
     connectionString: process.env.DATABASE_URL,
@@ -25,6 +27,7 @@ const dbOptions = process.env.DATABASE_URL ? {
 
 export const DB = new DBAdapter(dbOptions);
 let descs: Array<Descriptor>;
+let steps = new Map<string, object>();
 
 async function handleCommand(msg: string): Promise<[Command, boolean|object]>{
     const parsed = parsers.parseCommand(msg);
@@ -55,6 +58,14 @@ bot.on('text', async context => {
     const messageId = context.message.message_id;
     const user = await DB.getUserBy("associatedId", context.message.from.id ?? -1);
 
+    if(steps.has(user.id)){
+        const stepData = steps.get(user.id);
+        const parsed = await parsers.createRecordStepByStep(msgText, stepData!['categoryId'] as ID, user.id);
+        const result = parsed ? await DB.addRecord(parsed) : false;
+        console.log({parsed, result});
+        return;
+    }
+
     const [parsed, result] = parsers.willBeCommand(msgText)
         ? await handleCommand(msgText)
         : await handleRecord(msgText, user.id, messageId);
@@ -67,6 +78,17 @@ bot.on('text', async context => {
                 await context.reply(url, {entities: [{type: 'url', length: url.length, offset: 0}]});
 
             } break;
+
+            case 'keys': {
+                const keys = result['keys'];
+                await context.reply('keys', {reply_markup: {inline_keyboard: keys } } );
+            } break;
+
+            // case 'request': {
+            //     const request = result['request'];
+            //     steps.set(user.id, request['step']);
+            //     await context.reply('request ' + JSON.stringify(request) );
+            // }
         }
 
     } else {
@@ -85,6 +107,31 @@ bot.on('edited_message', async context => {
     console.log({updates, result});
 });
 
+bot.on('callback_query', async context => {
+    const cbQuery = context.callbackQuery;
+    const cbData = JSON.parse(cbQuery['data']);
+    const user = await DB.getUserBy("associatedId", cbQuery.from.id ?? -1);
+    console.log({cbData});
+
+    switch (cbData['flowId']) {
+        case 'out': {
+            const res = await executeCommand({opcode: 'out', argument: cbData['step'], additional: cbData['id']});
+            console.log({res});
+            if(res['type'] === 'keys') {
+                await context.reply('keys', {reply_markup: {inline_keyboard: res['keys']}});
+            } else if(res['type'] === 'request'){
+                const request = res['request'];
+                steps.set(user.id, request);
+                await context.reply('request ' + JSON.stringify(res['request']) );
+            }
+        } break;
+    }
+
+
+
+    context.answerCbQuery();
+});
+
 (async () => {
     botStarted = await start();
 })();
@@ -97,7 +144,7 @@ async function start(): Promise<boolean>{
 
     await bot.launch();
 
-    await bot.telegram.sendMessage(CHAT_ID, 'Me on');
+    await bot.telegram.sendMessage(SYSADM_CHAT_ID, 'Me on');
     console.log("App started");
     return true;
 }
@@ -105,7 +152,7 @@ async function start(): Promise<boolean>{
 async function finalize(s){
     if (botStarted) {
         botStarted = false;
-        await bot.telegram.sendMessage(CHAT_ID, 'Me off');
+        await bot.telegram.sendMessage(SYSADM_CHAT_ID, 'Me off');
         bot.stop('Termination signal ' + s);
     }
     console.log('Termination signal ' + s);
@@ -115,29 +162,4 @@ process.once('SIGINT', finalize);
 process.once('SIGTERM', finalize);
 process.once('SIGHUP', finalize);
 
-const staticPath = './web';
-app.set('views', staticPath);
-app.set('view engine', 'xpt');
-app.use(express.static(staticPath));
-
-console.log(path.resolve('./web') + path.sep );
-
-app.engine('xpt', xpt.express( path.resolve(staticPath) + path.sep));
-
-
-app.get('/web/info', async (req, res) => {
-    console.log(req.query);
-
-    const data = await createHTML();
-    console.log(data);
-    // res.type('.html').render('info/info');
-    res.render('info/info', {
-        outcomes: data['outcomesData'],
-        incomes: data['incomesData']
-    });
-
-});
-
-app.listen(process.env.PORT, () => {
-    console.log(`port: ${process.env.PORT}`);
-});
+setupRouters(app);

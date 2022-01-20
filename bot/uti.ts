@@ -7,168 +7,168 @@ const USER_ID = '1';
 export async function main(){
     await cpu.resetDB();
     const inputStream = [
-        "/add cat Расходы",
-        "/add aliases Расходы: outcomes",
+        "/addCategories Расходы",
+        "/addAliases Расходы: outcomes",
 
-        "/add cat Доходы",
-        "/add aliases Доходы: incomes",
+        "/addCategories Доходы",
+        "/addAliases Доходы: incomes",
 
-        "/add cat Расходы: Крупные регулярные траты",
-        "/add aliases Крупные регулярные траты: big",
+        "/addCategories Расходы: Крупные регулярные траты",
+        "/addAliases Крупные регулярные траты: big",
 
-        "/add cat Расходы: Продукты",
-        "/add aliases Продукты: goods",
+        "/addCategories Расходы: Продукты",
+        "/addAliases Продукты: goods",
 
-        "/add cat Расходы: Хобби и образование",
-        "/add aliases Хобби и образование: hobby education хобби образование",
+        "/addCategories Расходы: Хобби и образование",
+        "/addAliases Хобби и образование: hobby education хобби образование",
 
-        "/add cat Расходы: Здоровье",
-        "/add aliases Здоровье: health",
+        "/addCategories Расходы: Здоровье",
+        "/addAliases Здоровье: health",
 
-        "/add cat Расходы: Дом",
-        "/add aliases Дом: house",
+        "/addCategories Расходы: Дом",
+        "/addAliases Дом: house",
 
-        "/add cat Расходы: Домашние животные",
-        "/add aliases Домашние животные: звери зверье животные коты pets cats",
+        "/addCategories Расходы: Домашние животные",
+        "/addAliases Домашние животные: звери зверье животные коты pets cats",
 
-        "/add cat Расходы: Программные продукты",
-        "/add aliases Программные продукты: программы сайты soft software sites",
+        "/addCategories Расходы: Программные продукты",
+        "/addAliases Программные продукты: программы сайты soft software sites",
 
-        "/add cat Расходы: Транспорт",
-        "/add aliases Транспорт: transport",
+        "/addCategories Расходы: Транспорт",
+        "/addAliases Транспорт: transport",
 
-        "/add cat Расходы: Услуги ЖКХ, банков и госуслуги",
-        "/add aliases Услуги ЖКХ, банков и госуслуги: жкх госуслуги",
+        "/addCategories Расходы: Услуги ЖКХ, банков и госуслуги",
+        "/addAliases Услуги ЖКХ, банков и госуслуги: жкх госуслуги",
 
-        "/add cat Расходы: Прочие расходы",
-        "/add aliases Прочие расходы: разное",
-
-
-
-        "/add cat big: Кредит",
-        "/add aliases Кредит: credit",
-
-        "/add cat big: Аренда квартиры",
-        "/add aliases Аренда квартиры: rent rents",
-
-        "/add cat big: Техобслуживание машины и техосмотр",
-        "/add aliases Техобслуживание машины и техосмотр: ТО техобслуживание техосмотр maintenance service inspection",
-
-        "/add cat big: Страховка машины",
-        "/add aliases Страховка машины: страховка insurance",
-
-        "/add cat big: Сбережения",
-        "/add aliases Сбережения: копилка saving savings",
-
-        "/add cat big: Психологи",
-        "/add aliases Психологи: пси психолог psy psycho psychologist psychologists",
+        "/addCategories Расходы: Прочие расходы",
+        "/addAliases Прочие расходы: разное",
 
 
-        "/add cat goods: Обычные продукты",
-        "/add aliases Обычные продукты: еда food",
 
-        "/add cat goods: Сладости",
-        "/add aliases Сладости: candies sweets",
+        "/addCategories big: Кредит",
+        "/addAliases Кредит: credit",
 
-        "/add cat goods: Обеды",
-        "/add aliases Обеды: обед dinner",
+        "/addCategories big: Аренда квартиры",
+        "/addAliases Аренда квартиры: rent rents",
 
-        "/add cat goods: Деликатесы",
-        "/add aliases Деликатесы: delicacy delice",
+        "/addCategories big: Техобслуживание машины и техосмотр",
+        "/addAliases Техобслуживание машины и техосмотр: ТО техобслуживание техосмотр maintenance service inspection",
 
+        "/addCategories big: Страховка машины",
+        "/addAliases Страховка машины: страховка insurance",
 
-        "/add cat Здоровье: Медцентры",
-        "/add aliases Медцентры: медцентр medcenter medcenters",
+        "/addCategories big: Сбережения",
+        "/addAliases Сбережения: копилка saving savings",
 
-        "/add cat Здоровье: Лекарства, витамины и БАДы",
-        "/add aliases Лекарства, витамины и БАДы: лекарства витамины бады drugs meds vitamines supplements",
-
-        "/add cat Здоровье: Линзы и растворы",
-        "/add aliases Линзы и растворы: линзы растворы раствор lenses solutions solution",
+        "/addCategories big: Психологи",
+        "/addAliases Психологи: пси психолог psy psycho psychologist psychologists",
 
 
-        "/add cat Дом: Средства для стирки и уборки, клининг",
-        "/add aliases Средства для стирки и уборки, клининг: порошок капсулы клининг мойка cleaning",
+        "/addCategories goods: Обычные продукты",
+        "/addAliases Обычные продукты: еда food",
 
-        "/add cat Дом: Средства гигиены и ухода",
-        "/add aliases Средства гигиены и ухода: мыло мыльное уходовое кремушки шампунь гель soap",
+        "/addCategories goods: Сладости",
+        "/addAliases Сладости: candies sweets",
 
-        "/add cat Дом: Электрика и электроника",
-        "/add aliases Электрика и электроника: электрика электроника лампочки батарейки electronics",
+        "/addCategories goods: Обеды",
+        "/addAliases Обеды: обед dinner",
 
-
-        "/add cat pets: Корм",
-        "/add aliases Корм: feed",
-
-        "/add cat pets: Туалет",
-        "/add aliases Туалет: наполнитель litter",
-
-        "/add cat pets: Ветеринар",
-        "/add aliases Ветеринар: вет ветка ветеринарка vet vets",
+        "/addCategories goods: Деликатесы",
+        "/addAliases Деликатесы: delicacy delice",
 
 
-        "/add cat soft: Подписки",
-        "/add aliases Подписки: subscriptions",
+        "/addCategories Здоровье: Медцентры",
+        "/addAliases Медцентры: медцентр medcenter medcenters",
 
-        "/add cat soft: Приложения",
-        "/add aliases Приложения: apps applications",
+        "/addCategories Здоровье: Лекарства, витамины и БАДы",
+        "/addAliases Лекарства, витамины и БАДы: лекарства витамины бады drugs meds vitamines supplements",
 
-
-        "/add cat Транспорт: Топливо",
-        "/add aliases Топливо: бензин бензо fuel",
-
-        "/add cat Транспорт: Мойка и шиномонтаж",
-        "/add aliases Мойка и шиномонтаж: мойка шины шиномонтаж переобувка",
-
-        "/add cat Транспорт: Общественный транспорт",
-        "/add aliases Общественный транспорт: автобус метро талон талончик жетон жетончик",
+        "/addCategories Здоровье: Линзы и растворы",
+        "/addAliases Линзы и растворы: линзы растворы раствор lenses solutions solution",
 
 
-        "/add cat жкх: Мобильные",
-        "/add aliases Мобильные: абонплата абонентка mobile fee",
+        "/addCategories Дом: Средства для стирки и уборки, клининг",
+        "/addAliases Средства для стирки и уборки, клининг: порошок капсулы клининг мойка cleaning",
 
-        "/add cat жкх: Интернет",
-        "/add aliases Интернет: internet wifi",
+        "/addCategories Дом: Средства гигиены и ухода",
+        "/addAliases Средства гигиены и ухода: мыло мыльное уходовое кремушки шампунь гель soap",
 
-        "/add cat жкх: Комуналка",
-        "/add aliases Комуналка: платежи payments",
-
-        "/add cat жкх: Электричество",
-        "/add aliases Электричество: свет electricity",
-
-        "/add cat жкх: Банковские комиссии",
-        "/add aliases Банковские комиссии: комиссия комиссии банк",
+        "/addCategories Дом: Электрика и электроника",
+        "/addAliases Электрика и электроника: электрика электроника лампочки батарейки electronics",
 
 
-        "/add cat разное: Одежда и обувь",
-        "/add aliases Одежда и обувь: одежда обувь",
+        "/addCategories pets: Корм",
+        "/addAliases Корм: feed",
 
-        "/add cat разное: Родители",
-        "/add aliases Родители: мампап",
+        "/addCategories pets: Туалет",
+        "/addAliases Туалет: наполнитель litter",
 
-        "/add cat разное: Кофейни, кафе, рестораны",
-        "/add aliases Кофейни, кафе, рестораны: кофе кафе ресторан",
-
-        "/add cat разное: Личное",
-        "/add aliases Личное: private",
-
-        "/add cat Доходы: Заработная плата",
-        "/add aliases Заработная плата: зп аванс",
-
-        "/add cat Доходы: Премии и бонусы",
-        "/add aliases Премии и бонусы: премия премии бонус бонусы",
-
-        "/add cat Доходы: Подработки",
-        "/add aliases Подработки: подработка халтура фриланс",
-
-        "/add cat Доходы: Скидки и прочее",
-        "/add aliases Скидки и прочее: скидки скидка кэшбэк",
-
-        "/add cat Доходы: Рефинансирование",
-        "/add aliases Рефинансирование: возврат обмен валюта",
+        "/addCategories pets: Ветеринар",
+        "/addAliases Ветеринар: вет ветка ветеринарка vet vets",
 
 
-        "/show cat",
+        "/addCategories soft: Подписки",
+        "/addAliases Подписки: subscriptions",
+
+        "/addCategories soft: Приложения",
+        "/addAliases Приложения: apps applications",
+
+
+        "/addCategories Транспорт: Топливо",
+        "/addAliases Топливо: бензин бензо fuel",
+
+        "/addCategories Транспорт: Мойка и шиномонтаж",
+        "/addAliases Мойка и шиномонтаж: мойка шины шиномонтаж переобувка",
+
+        "/addCategories Транспорт: Общественный транспорт",
+        "/addAliases Общественный транспорт: автобус метро талон талончик жетон жетончик",
+
+
+        "/addCategories жкх: Мобильные",
+        "/addAliases Мобильные: абонплата абонентка mobile fee",
+
+        "/addCategories жкх: Интернет",
+        "/addAliases Интернет: internet wifi",
+
+        "/addCategories жкх: Комуналка",
+        "/addAliases Комуналка: платежи payments",
+
+        "/addCategories жкх: Электричество",
+        "/addAliases Электричество: свет electricity",
+
+        "/addCategories жкх: Банковские комиссии",
+        "/addAliases Банковские комиссии: комиссия комиссии банк",
+
+
+        "/addCategories разное: Одежда и обувь",
+        "/addAliases Одежда и обувь: одежда обувь",
+
+        "/addCategories разное: Родители",
+        "/addAliases Родители: мампап",
+
+        "/addCategories разное: Кофейни, кафе, рестораны",
+        "/addAliases Кофейни, кафе, рестораны: кофе кафе ресторан",
+
+        "/addCategories разное: Личное",
+        "/addAliases Личное: private",
+
+        "/addCategories Доходы: Заработная плата",
+        "/addAliases Заработная плата: зп аванс",
+
+        "/addCategories Доходы: Премии и бонусы",
+        "/addAliases Премии и бонусы: премия премии бонус бонусы",
+
+        "/addCategories Доходы: Подработки",
+        "/addAliases Подработки: подработка халтура фриланс",
+
+        "/addCategories Доходы: Скидки и прочее",
+        "/addAliases Скидки и прочее: скидки скидка кэшбэк",
+
+        "/addCategories Доходы: Рефинансирование",
+        "/addAliases Рефинансирование: возврат обмен валюта",
+
+
+        "/showCategories",
         "еда  24.80 ( к винишку ) ",
         "то 1150 ноябрь",
         "обед 5,10 02-nov",

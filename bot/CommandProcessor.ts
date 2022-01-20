@@ -1,18 +1,18 @@
 import {Command, Descriptor} from './types';
 import {DB} from './app';
-import {createHTML} from './reports/render';
 
 export async function executeCommand(command: Command): Promise<boolean|object> {
 
-    const fullcommand = command.opcode + (command.param ? ' ' + command.param : '' );
+    const fullcommand = command.opcode;
 
     const transitions = {
-        'add cat' :     async () => await createCategory(command.argument!, command.additional),
-        'add aliases' : async () => await addAliases(command.argument!, command.additional!),
-        'show cat' :    async () => await showCategories(),
-        'show rec' :    async () => await showRecords(),
-        'do file' :     async () => await doFile(),
-        'reset' :       async () => await resetDB()
+        'addcategory' :    async () => await createCategory(command.argument!, command.additional),
+        'addaliases' :     async () => await addAliases(command.argument!, command.additional!),
+        'showcategories' : async () => await showCategories(),
+        'showrecords' :    async () => await showRecords(),
+        'dofile' :         async () => await doFile(),
+        'out':             async () => await newOutcomeDialog(command.argument!, command.additional!),
+        'reset' :          async () => await resetDB()
     };
 
     const f = transitions[fullcommand];
@@ -26,10 +26,13 @@ export async function executeCommand(command: Command): Promise<boolean|object> 
     return result;
 }
 
-async function createCategory(name: string, parent?: string): Promise<boolean> {
-    return parent
-        ? createSubcategory(parent, name)
-        : createSupercategory(name);
+async function createCategory(argument: string, additional?: string): Promise<boolean> {
+    if (!argument) {
+        return false;
+    }
+    return additional
+        ? createSubcategory(additional, argument) // name, parent
+        : createSupercategory(argument);
 }
 
 async function createSupercategory(name: string): Promise<boolean> {
@@ -98,6 +101,36 @@ async function doFile(): Promise<object> {
         type: 'url',
         url: process.env['DOMAIN'] + 'web/info'
     };
+}
+
+async function newOutcomeDialog(step?: string, arg?: string): Promise<object> {
+    let showingCategories: Array<object> = [];
+    const categories = await DB.getCategories();
+    const flowId = "out";
+    if(!step){
+        const outcomes = await DB.getCategoryBy('outcomes');
+        showingCategories = categories
+            .filter(c => c.parentId === outcomes!.id)
+            .map(c => ({
+                text: c.name,
+                callback_data: JSON.stringify({id: c.id, flowId, step: "1"})}
+            ));
+        return {type: 'keys', keys: showingCategories.map(c => [c]) };
+    } else if(step === '1'){
+        const parentCategory = await DB.getCategoryById(arg!);
+        showingCategories = categories
+            .filter(c => c.parentId === parentCategory!.id)
+            .map(c => ({
+                text: c.name,
+                callback_data: JSON.stringify({id: c.id, flowId, step: "2"})}
+            ))
+        return {type: 'keys', keys: showingCategories.map(c => [c]) };
+    } else if(step === '2'){
+        return {type: 'request', request: {categoryId: arg, step: '3'} }
+    }
+    else {
+        return {};
+    }
 }
 
 export async function resetDB(): Promise<boolean> {

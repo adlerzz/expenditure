@@ -58,11 +58,29 @@ export class DBAdapter extends DBInterface {
         const result = await this.client.query(query, [category.parentId, category.name, category.aliases]);
         // console.log(result);
         await this.client.query(`COMMIT`);
+        await this.client.query(`REFRESH MATERIALIZED VIEW outcomes`);
+        await this.client.query(`REFRESH MATERIALIZED VIEW incomes`);
         return result;
     }
 
     public async getCategories(): Promise<Array<Category>> {
         const query = `SELECT * FROM CATEGORIES`;
+        const select = await this.client.query(query);
+        const result = select.rows.map(DBAdapter.DBCastToCategory);
+        // console.log(result);
+        return result;
+    }
+
+    public async getOutcomesCategories(): Promise<Array<Category>> {
+        const query = `SELECT * FROM OUTCOMES`;
+        const select = await this.client.query(query);
+        const result = select.rows.map(DBAdapter.DBCastToCategory);
+        // console.log(result);
+        return result;
+    }
+
+    public async getIncomesCategories(): Promise<Array<Category>> {
+        const query = `SELECT * FROM INCOMES`;
         const select = await this.client.query(query);
         const result = select.rows.map(DBAdapter.DBCastToCategory);
         // console.log(result);
@@ -87,6 +105,8 @@ export class DBAdapter extends DBInterface {
 
     public async updateCategory(id: ID, category: CategoryUpdate): Promise<boolean> {
 
+
+
         const fields = Object.entries(category).map(([property, value]) => ({property, value}))
             .filter( entry => entry.value !== undefined)
         const af = fields.find(field => field.property === 'aliases');
@@ -99,12 +119,14 @@ export class DBAdapter extends DBInterface {
         const result = await this.client.query(query, [id]);
         // console.log(result);
         await this.client.query(`COMMIT`);
+        await this.client.query(`REFRESH MATERIALIZED VIEW outcomes`);
+        await this.client.query(`REFRESH MATERIALIZED VIEW incomes`);
         return result;
     }
 
     public async addRecord(record: RecordCreate): Promise<boolean> {
         const query = `INSERT INTO RECORDS (CATEGORY_ID, USER_ID, VALUE, TIMESTAMP, COMMENT, MESSAGE_ID) 
-                        VALUES ($1, $2, $3::numeric::money, $4, $5, $6)`;
+                        VALUES ($1, $2, $3, $4, $5, $6)`;
         const result = await this.client.query(query, [record.categoryId, record.userId, record.value, record.timestamp, record.comment, record.messageId]);
         // console.log(result);
         await this.client.query(`COMMIT`);

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly report</title>
+    <link rel="stylesheet" type="text/css" href="/reports/monthly/monthly.css">
+</head>
+<body>
+    <div id="main">
+        <div class="pad">
+            <div class="button" onclick="showOutcomes()">
+                Outcomes
+            </div>
+            <div class="button" onclick="showIncomes()">
+                Incomes
+            </div>
+        </div>
+
+        <div class="outcomes datatable">
+            <div class="dataheader">Дата</div>
+            <div class="dataheader">Категория/Статья</div>
+            <div class="dataheader">Сумма</div>
+            <div class="dataheader">Кто записал</div>
+            <div class="dataheader">Комментарий</div>
+            <template repeat="{{record in outcomes}}">
+                <div class="datacell">{{record.timestamp}}</div>
+                <div class="datacell">{{record.category}}</div>
+                <div class="datacell">{{record.value}}</div>
+                <div class="datacell">{{record.user}}</div>
+                <div class="datacell">{{record.comment}}</div>
+            </template>
+        </div>
+
+        <div class="incomes datatable hidden">
+            <div class="dataheader">Дата</div>
+            <div class="dataheader">Категория/Статья</div>
+            <div class="dataheader">Сумма</div>
+            <div class="dataheader">Кто записал</div>
+            <div class="dataheader">Комментарий</div>
+            <template repeat="{{record in incomes}}">
+                <div class="datacell">{{record.timestamp}}</div>
+                <div class="datacell">{{record.category}}</div>
+                <div class="datacell">{{record.value}}</div>
+                <div class="datacell">{{record.user}}</div>
+                <div class="datacell">{{record.comment}}</div>
+            </template>
+        </div>
+    </div>
+    <script src="/reports/monthly/monthly.js"></script>
+</body>
+</html>

@@ -2,7 +2,7 @@ import path from 'path';
 import express from "express";
 import * as xpt from 'htmling';
 
-import {createHTML} from './render';
+import * as render from './render';
 
 const staticPath = './web';
 
@@ -20,7 +20,7 @@ export function setupRouters(app: any){
     app.get('/web/info', async (req, res) => {
         console.log(req.query);
 
-        const data = await createHTML();
+        const data = await render.createInfo();
         console.log(data);
         res.render('info/info', {
             outcomes: data['outcomesData'],
@@ -28,6 +28,17 @@ export function setupRouters(app: any){
         });
 
     });
+
+    app.get('/web/reports/monthly', async (req, res) => {
+        console.log(req.query);
+        const month = req.query['mon']
+        const data = await render.createMonthlyReport(month);
+        console.log(data);
+        res.render('reports/monthly/monthly', {
+            outcomes: data['outcomesData'],
+            incomes: data['incomesData']
+        });
+    })
 
     app.listen(process.env.PORT, () => {
         console.log(`port: ${process.env.PORT}`);

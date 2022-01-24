@@ -1,5 +1,5 @@
 import {DB} from './app';
-import * as cpu from './CommandProcessor';
+import * as cpu from './command-processor';
 import * as parsers from './parsers';
 
 const USER_ID = '1';

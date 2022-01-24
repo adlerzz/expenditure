@@ -1,5 +1,6 @@
 import {Command, Descriptor} from './types';
 import {DB} from './app';
+import {DateUtils} from './date-utils';
 
 export async function executeCommand(command: Command): Promise<boolean|object> {
 
@@ -12,6 +13,7 @@ export async function executeCommand(command: Command): Promise<boolean|object> 
         'showrecords' :    async () => await showRecords(),
         'dofile' :         async () => await doFile(),
         'out':             async () => await newOutcomeDialog(command.argument!, command.additional!),
+        'monthlyreport':   async () => await getMonthlyReport(),
         'reset' :          async () => await resetDB()
     };
 
@@ -131,6 +133,15 @@ async function newOutcomeDialog(step?: string, arg?: string): Promise<object> {
     else {
         return {};
     }
+}
+
+async function getMonthlyReport(): Promise<object> {
+    const domain = process.env['DOMAIN'];
+    const month = DateUtils.currentMonthKey();
+    return {
+        type: 'url',
+        url:  `${domain}web/reports/monthly?mon=${month}`
+    };
 }
 
 export async function resetDB(): Promise<boolean> {

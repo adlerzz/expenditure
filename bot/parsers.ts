@@ -13,33 +13,46 @@ function parseDescriptor(text: string, descriptors: Array<Descriptor>): ID | nul
     return descriptor?.id ?? null;
 }
 
-export async function createRecordStepByStep(inputString: string, categoryId: ID, userId: ID): Promise<RecordCreate|null> {
-    const comment = (inputString.match(/\((.*)\)/) ?? []).pop()?.trim();
+function recordSplit(inputString: string): [string|null, Array<string>] {
+    const comment = (inputString.match(/\((.*)\)/) ?? []).pop()?.trim() ?? null;
 
     const parts = (comment ? inputString.slice(0,inputString.indexOf('(')): inputString)
         .split(' ')
         .filter(s => s.length > 0);
+    return [comment, parts];
+}
 
-    const timestamp = parts.map( part => DateUtils.parseDate(part)).find(it => it) ?? DateUtils.todayDate();
-    const value = parts.map(part => parseCurrency(part)).find(it => it);
+function extractCategoryId(parts: Array<string>, descriptors: Array<Descriptor>): ID | null {
+    return parts.map( part => parseDescriptor(part, descriptors)).find(it => it) ?? null;
+}
+
+function extractTimestamp(parts: Array<string>): Date | null {
+    return parts.map( part => DateUtils.parseDate(part)).find(it => it) ?? DateUtils.todayDate();
+}
+
+function extractValue(parts: Array<string>): number | null {
+    return parts.map(part => parseCurrency(part)).find(it => it) ?? null;
+}
+
+export async function createRecordStepByStep(inputString: string, categoryId: ID, userId: ID): Promise<RecordCreate|null> {
+    const [comment, parts] = recordSplit(inputString);
+
+    const timestamp = extractTimestamp(parts);
+    const value = extractValue(parts);
 
     return { categoryId, comment, timestamp,
         userId, value, messageId: -1 } as RecordCreate;
 }
 
 export async function parseRecord(inputString: string, descriptors: Array<Descriptor>, messageId: number, userId: ID): Promise<RecordCreate|null> {
-    const comment = (inputString.match(/\((.*)\)/) ?? []).pop()?.trim();
+    const [comment, parts] = recordSplit(inputString);
 
-    const parts = (comment ? inputString.slice(0,inputString.indexOf('(')): inputString)
-        .split(' ')
-        .filter(s => s.length > 0);
-
-    const categoryId = parts.map( part => parseDescriptor(part, descriptors)).find(it => it);
+    const categoryId = extractCategoryId(parts, descriptors);
     if(!categoryId){
         return null;
     }
-    const timestamp = parts.map( part => DateUtils.parseDate(part)).find(it => it) ?? DateUtils.todayDate();
-    const value = parts.map(part => parseCurrency(part)).find(it => it);
+    const timestamp = extractTimestamp(parts);
+    const value = extractValue(parts);
 
     return { categoryId, comment, timestamp,
         userId, value, messageId } as RecordCreate;
@@ -52,7 +65,7 @@ export async function parseRecordUpdate(inputString: string, descriptors: Array<
         .split(' ')
         .filter(s => s.length > 0);
 
-    const categoryId = parts.map( part => parseDescriptor(part, descriptors)).find(it => it);
+    const categoryId = extractCategoryId(parts, descriptors);
     if(!categoryId){
         return null;
     }
@@ -82,7 +95,6 @@ export function parseCommand(inputString: string): Command {
     result.opcode = rest.slice(1, opcodeEnd).toLowerCase();
 
     rest = rest.slice(opcodeEnd + 1);
-
     const argEnd = rest.indexOf(':');
 
     if(argEnd === -1){

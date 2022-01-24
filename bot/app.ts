@@ -1,13 +1,10 @@
 import {Telegraf} from 'telegraf';
-import * as cpu from './CommandProcessor';
+import * as cpu from './command-processor';
 import * as parsers from './parsers';
-import * as xpt from 'htmling';
 import express from "express";
 import {Command, Descriptor, ID, RecordCreate, RecordUpdate} from './types';
 import {DBAdapter} from './db/DBAdapter';
-import * as path from 'path';
-import {createHTML} from './reports/render';
-import {executeCommand} from './CommandProcessor';
+import {executeCommand} from './command-processor';
 import {setupRouters} from './reports/routers';
 
 const app = express();

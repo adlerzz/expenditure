@@ -1,6 +1,7 @@
 import path from 'path';
 import express from "express";
-import * as xpt from 'htmling';
+import consolidate from "consolidate";
+import * as xpt from 'swig-templates';
 
 import * as render from './render';
 
@@ -14,7 +15,7 @@ export function setupRouters(app: any){
 
     console.log(path.resolve('./web') + path.sep );
 
-    app.engine('xpt', xpt.express( path.resolve(staticPath) + path.sep));
+    app.engine('xpt', consolidate.swig);
 
 
     app.get('/web/info', async (req, res) => {
@@ -35,8 +36,10 @@ export function setupRouters(app: any){
         const data = await render.createMonthlyReport(month);
         console.log(data);
         res.render('reports/monthly/monthly', {
-            outcomes: data['outcomesData'],
-            incomes: data['incomesData']
+            tabs: [
+                {data: data['outcomesData'], class: 'outcomes'},
+                {data: data['incomesData'], class: 'incomes'}
+            ]
         });
     })
 

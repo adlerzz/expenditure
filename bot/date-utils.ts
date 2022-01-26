@@ -19,6 +19,12 @@ const MONTHS = [
 
 
 export class DateUtils {
+
+    public static init() {
+        moment.locale('ru');
+        console.log('DateUtils initialized');
+    }
+
     private static today(): moment.Moment {
         return moment().utc(true).startOf('day');
     }
@@ -82,8 +88,9 @@ export class DateUtils {
         return (text.match(/^(0?[1-9]|[12][0-9]|3[01])$/) ?? []).length !== 0 ? +text : null;
     }
 
-    public static formatDate(date: Date): string {
-        return moment(date).format('YYYY-MM-DD');
+    public static formatDate(date: Date, forPrint?: boolean): string {
+        const format = forPrint === true ? 'DD MMM YYYY, ddd' : 'YYYY-MM-DD';
+        return moment(date).format(format);
     }
 
     public static isInMonth(date: Date, month: string): boolean {

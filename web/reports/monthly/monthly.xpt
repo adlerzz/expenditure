@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,46 +7,41 @@
     <link rel="stylesheet" type="text/css" href="/reports/monthly/monthly.css">
 </head>
 <body>
-    <div id="main">
+<div id="main">
+    <div class="content">
         <div class="pad">
-            <div class="button" onclick="showOutcomes()">
+            <div class="button button-outcomes active" onclick="showOutcomes()">
                 Outcomes
             </div>
-            <div class="button" onclick="showIncomes()">
+            <div class="button button-incomes" onclick="showIncomes()">
                 Incomes
             </div>
         </div>
 
-        <div class="outcomes datatable">
-            <div class="dataheader">Дата</div>
-            <div class="dataheader">Категория/Статья</div>
-            <div class="dataheader">Сумма</div>
-            <div class="dataheader">Кто записал</div>
-            <div class="dataheader">Комментарий</div>
-            <template repeat="{{record in outcomes}}">
-                <div class="datacell">{{record.timestamp}}</div>
-                <div class="datacell">{{record.category}}</div>
-                <div class="datacell">{{record.value}}</div>
-                <div class="datacell">{{record.user}}</div>
-                <div class="datacell">{{record.comment}}</div>
-            </template>
-        </div>
+        {% for tab in tabs %}
 
-        <div class="incomes datatable hidden">
-            <div class="dataheader">Дата</div>
-            <div class="dataheader">Категория/Статья</div>
-            <div class="dataheader">Сумма</div>
-            <div class="dataheader">Кто записал</div>
-            <div class="dataheader">Комментарий</div>
-            <template repeat="{{record in incomes}}">
-                <div class="datacell">{{record.timestamp}}</div>
-                <div class="datacell">{{record.category}}</div>
-                <div class="datacell">{{record.value}}</div>
-                <div class="datacell">{{record.user}}</div>
-                <div class="datacell">{{record.comment}}</div>
-            </template>
-        </div>
+            <div class="{{tab.class}} d-table">
+                <div class="d-row">
+                    <div class="d-cell d-header"><span>Дата</span></div>
+                    <div class="d-cell d-header"><span>Категория/Статья</span></div>
+                    <div class="d-cell d-header"><span>Сумма</span></div>
+                    <div class="d-cell d-header"><span>Кто записал</span></div>
+                    <div class="d-cell d-header"><span>Комментарий</span></div>
+                </div>
+
+                {% for record in tab.data %}
+                    <div class="d-row">
+                        <div class="d-cell"><span>{{record.timestamp}}</span></div>
+                        <div class="d-cell"><span>{{record.category}}</span></div>
+                        <div class="d-cell"><span>{{record.value}}</span></div>
+                        <div class="d-cell"><span>{{record.user}}</span></div>
+                        <div class="d-cell"><span>{{record.comment}}</span></div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
     </div>
-    <script src="/reports/monthly/monthly.js"></script>
+</div>
+<script src="/reports/monthly/monthly.js"></script>
 </body>
 </html>

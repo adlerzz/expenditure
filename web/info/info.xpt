@@ -10,43 +10,43 @@
     <div id="main">
         <div class="categories">
 
-            <template repeat="{{category in outcomes}}">
+            {% for category in outcomes %}
 
                 <div class="category">
                     <div class="name">{{category.name}}</div>
                     <div class="aliases">{{category.aliases}}</div>
                     <div class="articles">
-                        <template repeat="{{article in category.children}}">
+                        {% for article in category.children %}
                             <div class="name">
                                 {{article.name}}
                             </div>
                             <div class="aliases">
                                 {{article.aliases}}
                             </div>
-                        </template>
+                        {% endfor %}
                     </div>
                 </div>
 
-            </template>
+            {% endfor %}
 
-            <template repeat="{{category in incomes}}">
+            {% for category in incomes %}
 
                 <div class="category">
                     <div class="name">{{category.name}}</div>
                     <div class="aliases">{{category.aliases}}</div>
                     <div class="articles">
-                        <template repeat="{{article in category.children}}">
+                        {% for article in category.children %}
                             <div class="name">
                                 {{article.name}}
                             </div>
                             <div class="aliases">
                                 {{article.aliases}}
                             </div>
-                        </template>
+                        {% endfor %}
                     </div>
                 </div>
 
-            </template>
+            {% endfor %}
 
         </div>
     </div>

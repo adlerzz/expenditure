@@ -6,8 +6,11 @@ import {Command, Descriptor, ID, RecordCreate, RecordUpdate} from './types';
 import {DBAdapter} from './db/DBAdapter';
 import {executeCommand} from './command-processor';
 import {setupRouters} from './reports/routers';
+import {DateUtils} from './date-utils';
 
 const app = express();
+
+DateUtils.init();
 
 const bot = new Telegraf(process.env.TOKEN ?? '');
 let botStarted = false;

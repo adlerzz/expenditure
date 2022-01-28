@@ -29,6 +29,28 @@ export interface Command {
     additional?: string;
 }
 
+export type CommandResult = CommandResultCode | CommandResultRequest | CommandResultUrl | CommandResultKeys;
+
+interface CommandResultCode {
+    type: 'code',
+    code: boolean;
+}
+
+interface CommandResultRequest {
+    type: 'request',
+    request: object
+}
+
+interface CommandResultUrl {
+    type: 'url',
+    url: string
+}
+
+interface CommandResultKeys {
+    type: 'keys',
+    keys: Array<Array<object>>
+}
+
 export interface User {
     id: ID;
     nickname: string;

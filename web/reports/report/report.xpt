@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly report</title>
+    <link rel="stylesheet" type="text/css" href="/reports/report/report.css">
+</head>
+<body>
+<div id="main">
+    <div class="content">
+        <div class="categories">
+
+        {% for tab in tabs %}
+            {% for category in tab.data %}
+            <div class="category">
+                <div class="name">{{category.name}}</div>
+                <div class="value">Итого по категории: {{category.value}}</div>
+                <div class="articles">
+                    {% for article in category.children %}
+                    <div class="name">
+                        {{article.name}}
+                    </div>
+                    <div class="value">
+                        <span>{{article.value}}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% endfor %}
+
+        {% endfor %}
+        </div>
+    </div>
+</div>
+<!--<script src="/reports/report/report.js"></script>-->
+</body>
+</html>

@@ -1,8 +1,15 @@
-import {Command, Descriptor} from './types';
+import {Command, CommandResult, Descriptor} from './types';
 import {DB} from './app';
 import {DateUtils} from './date-utils';
 
-export async function executeCommand(command: Command): Promise<boolean|object> {
+export const CODE_FAIL: CommandResult = {type: 'code', code: false};
+export const CODE_OK: CommandResult = {type: 'code', code: true};
+
+export function CRByCode(code: boolean): CommandResult {
+    return {type: 'code', code: code};
+}
+
+export async function executeCommand(command: Command): Promise<CommandResult> {
 
     const fullcommand = command.opcode;
 
@@ -13,14 +20,15 @@ export async function executeCommand(command: Command): Promise<boolean|object> 
         'showrecords' :    async () => await showRecords(),
         'dofile' :         async () => await doFile(),
         'out':             async () => await newOutcomeDialog(command.argument!, command.additional!),
-        'monthlyreport':   async () => await getMonthlyReport(),
+        'monthlyreport':     async () => await getMonthlyReport(),
+        'monthlydetails':   async () => await getMonthlyDetails(),
         'reset' :          async () => await resetDB()
     };
 
     const f = transitions[fullcommand];
     if(!f){
         console.log(`Bad command ${fullcommand}`);
-        return false;
+        return CODE_FAIL;
     }
     const result = await f();
 
@@ -28,57 +36,60 @@ export async function executeCommand(command: Command): Promise<boolean|object> 
     return result;
 }
 
-async function createCategory(argument: string, additional?: string): Promise<boolean> {
+async function createCategory(argument: string, additional?: string): Promise<CommandResult> {
     if (!argument) {
-        return false;
+        return CODE_FAIL;
     }
     return additional
         ? createSubcategory(additional, argument) // name, parent
         : createSupercategory(argument);
 }
 
-async function createSupercategory(name: string): Promise<boolean> {
+async function createSupercategory(name: string): Promise<CommandResult> {
     if(await DB.getCategoryBy(name)){
-        return false;
+        return CODE_FAIL;
     }
     const category = {
         parentId: '0',
         name: name.toUpperCase(),
         aliases: []
     }
-    return await DB.addCategory(category);
+    const res = await DB.addCategory(category);
+    return CRByCode(res);
 }
 
-async function createSubcategory(name: string, parent: string): Promise<boolean>{
+async function createSubcategory(name: string, parent: string): Promise<CommandResult>{
     const p = await DB.getCategoryBy(parent);
     if(!p) {
         console.log('no ' + parent);
-        return false;
+        return CODE_FAIL;
     }
     if(await DB.getCategoryBy(name)){
         console.log('already ' + name);
-        return false;
+        return CODE_FAIL;
     }
     const category = {
         parentId: p.id,
         name: name.toUpperCase(),
         aliases: []
     }
-    return await DB.addCategory(category);
+    const res = await DB.addCategory(category);
+    return CRByCode(res);
 }
 
-async function addAliases(name: string, aliasesStr: string): Promise<boolean>{
+async function addAliases(name: string, aliasesStr: string): Promise<CommandResult>{
     const c = await DB.getCategoryBy(name);
     if(!c) {
         console.log('no ' + name);
-        return false;
+        return CODE_FAIL;
     }
     const id = c.id;
     const aliases = aliasesStr
         .split(' ')
         .filter(s => s.length > 1)
         .map(s => s.toUpperCase());
-    return await DB.updateCategory(id,{aliases});
+    const res = await DB.updateCategory(id,{aliases})
+    return CRByCode(res);
 }
 
 export async function getCategoriesDescriptors(): Promise<Array<Descriptor>> {
@@ -88,24 +99,24 @@ export async function getCategoriesDescriptors(): Promise<Array<Descriptor>> {
         .flatMap( ({id, descs}) => descs.map(desc => ( {id, value: desc} as Descriptor)));
 }
 
-async function showCategories(): Promise<boolean> {
+async function showCategories(): Promise<CommandResult> {
     console.log(await DB.getCategories());
-    return true;
+    return CODE_OK;
 }
 
-async function showRecords(): Promise<boolean> {
+async function showRecords(): Promise<CommandResult> {
     console.log(await DB.getRecords());
-    return true;
+    return CODE_OK;
 }
 
-async function doFile(): Promise<object> {
+async function doFile(): Promise<CommandResult> {
     return {
         type: 'url',
         url: process.env['DOMAIN'] + 'web/info'
     };
 }
 
-async function newOutcomeDialog(step?: string, arg?: string): Promise<object> {
+async function newOutcomeDialog(step?: string, arg?: string): Promise<CommandResult> {
     let showingCategories: Array<object> = [];
     const categories = await DB.getCategories();
     const flowId = "out";
@@ -131,16 +142,25 @@ async function newOutcomeDialog(step?: string, arg?: string): Promise<object> {
         return {type: 'request', request: {categoryId: arg, step: '3'} }
     }
     else {
-        return {};
+        return CODE_FAIL;
     }
 }
 
-async function getMonthlyReport(): Promise<object> {
+async function getMonthlyReport(): Promise<CommandResult> {
     const domain = process.env['DOMAIN'];
     const month = DateUtils.currentMonthKey();
     return {
         type: 'url',
-        url:  `${domain}web/reports/monthly?mon=${month}`
+        url:  `${domain}web/reports/report?mon=${month}`
+    };
+}
+
+async function getMonthlyDetails(): Promise<CommandResult> {
+    const domain = process.env['DOMAIN'];
+    const month = DateUtils.currentMonthKey();
+    return {
+        type: 'url',
+        url:  `${domain}web/reports/details?mon=${month}`
     };
 }
 

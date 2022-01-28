@@ -30,18 +30,31 @@ export function setupRouters(app: any){
 
     });
 
-    app.get('/web/reports/monthly', async (req, res) => {
+    app.get('/web/reports/details', async (req, res) => {
         console.log(req.query);
         const month = req.query['mon']
-        const data = await render.createMonthlyReport(month);
+        const data = await render.createMonthlyDetails(month);
         console.log(data);
-        res.render('reports/monthly/monthly', {
+        res.render('reports/details/details', {
             tabs: [
                 {data: data['outcomesData'], class: 'outcomes'},
                 {data: data['incomesData'], class: 'incomes'}
             ]
         });
-    })
+    });
+
+    app.get('/web/reports/report', async (req, res) => {
+        console.log(req.query);
+        const month = req.query['mon']
+        const data = await render.createMonthlyReport(month);
+        console.log(data);
+        res.render('reports/report/report', {
+            tabs: [
+                {data: data['outcomesData'], class: 'outcomes'},
+                {data: data['incomesData'], class: 'incomes'}
+            ]
+        });
+    });
 
     app.listen(process.env.PORT, () => {
         console.log(`port: ${process.env.PORT}`);

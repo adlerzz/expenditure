@@ -1,6 +1,41 @@
 #main{
     display: flex;
+    justify-content: center;
     font-family: sans-serif;
+}
+
+.pad{
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+}
+
+.button {
+    display: flex;
+    justify-content: center;
+    border: 1px solid black;
+    padding: 6px;
+    cursor: pointer;
+    width: 100px;
+}
+
+.pad .button:first-child {
+    border-bottom-left-radius: 16px;
+    border-top-left-radius: 16px;
+}
+
+.pad .button:last-child {
+    border-bottom-right-radius: 16px;
+    border-top-right-radius: 16px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.button.active {
+    color: white;
+    background-color: blue;
 }
 
 .categories {
@@ -15,47 +50,47 @@
 }
 
 .category {
-    border: 2px solid blue;
+    border: 2px solid #8060FF;
     margin: 10px 10px;
 }
 
 .category>.name {
     font-size: 18px;
     padding: 10px;
-    background-color: #94f6d5;
+    background-color: #b4f6e5;
 }
 
 .value {
-    font-size: 12px;
+    font-size: 15px;
     font-style: italic;
 }
 
 .category>.value {
-    padding: 6px 16px;
-    background-color: #fcfcda;
+    padding: 10px 15px 15px;
+    background-color: #fcfcea;
 }
 
 .articles {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    padding: 5px 15px 15px;
+    grid-template-columns: 3fr 1fr;
+    padding: 10px 20px;
     background-color: #ebebfc;
 }
 
 .articles>.name, .articles>.value {
-    padding: 4px 10px;
+    padding: 4px 8px;
     margin: 1px 0;
 }
 
 .articles>.name {
     font-size: 14px;
-    background-color: #c9c3f1;
+    background-color: #d9d3f1;
 }
 
 .articles>.value {
     display: flex;
     justify-content: flex-end;
-    background-color: #f6bdbd;
+    background-color: #f6dddd;
 }
 
 

@@ -1,22 +1,14 @@
-const ot = document.querySelector('.outcomes.d-table');
-const it = document.querySelector('.incomes.d-table');
-const ob = document.querySelector('.button-outcomes');
-const ib = document.querySelector('.button-incomes');
+registerSwitchingGroup('det_tab', ['.outcomes.d-table', '.incomes.d-table']);
+registerSwitchingGroup('det_but', ['.button-outcomes', '.button-incomes'], 'activate');
 
 function showOutcomes(){
-    it.classList.add('hidden');
-    ot.classList.remove('hidden');
-
-    ib.classList.remove('active');
-    ob.classList.add('active');
+    switchWithinGroup('det_tab', '.outcomes.d-table');
+    switchWithinGroup('det_but', '.button-outcomes');
 }
 
 function showIncomes(){
-    ot.classList.add('hidden');
-    it.classList.remove('hidden');
-
-    ib.classList.add('active');
-    ob.classList.remove('active');
+    switchWithinGroup('det_tab', '.incomes.d-table');
+    switchWithinGroup('det_but', '.button-incomes');
 }
 
 setTimeout( () => showOutcomes(), 0);

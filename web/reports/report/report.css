@@ -10,11 +10,12 @@
     padding: 10px;
 }
 
-.pad .button {
+.button {
     display: flex;
     justify-content: center;
     border: 1px solid black;
     padding: 6px;
+    cursor: pointer;
     width: 100px;
 }
 

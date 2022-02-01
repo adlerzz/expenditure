@@ -12,10 +12,10 @@
 
         <div class="pad">
             <div class="button button-outcomes active" onclick="showOutcomes()">
-                <span>Outcomes</span>
+                <span>Расходы</span>
             </div>
             <div class="button button-incomes" onclick="showIncomes()">
-                <span>Incomes</span>
+                <span>Доходы</span>
             </div>
             <div class="button button-incomes" onclick="showBrief()">
                 <span>Brief</span>
@@ -23,23 +23,30 @@
         </div>
 
         {% for tab in tabs %}
+            <div class="button" onclick="toggle()">
+                <span>toggle</span>
+            </div>
             <div class="{{tab.class}} categories">
 
 
             {% for category in tab.data %}
                 <div class="category">
-                    <div class="name">{{category.name}}</div>
+                    <div class="name">
+                        <span>{{category.name}}</span>
+                    </div>
                     <div class="articles">
                         {% for article in category.children %}
                             <div class="name">
-                                {{article.name}}
+                                <span>{{article.name}}</span>
                             </div>
                             <div class="value">
                                 <span>{{article.value}}</span>
                             </div>
                         {% endfor %}
                     </div>
-                    <div class="value">Итого по категории: {{category.value}}</div>
+                    <div class="value">
+                        <span>Итого по категории: {{category.value}}</span>
+                    </div>
                 </div>
 
             {% endfor %}
@@ -48,6 +55,7 @@
 
     </div>
 </div>
+<script src="/scripts/behavior.js"></script>
 <script src="/reports/report/report.js"></script>
 </body>
 </html>

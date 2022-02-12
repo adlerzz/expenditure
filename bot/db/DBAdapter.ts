@@ -53,13 +53,17 @@ export class DBAdapter extends DBInterface {
         }) as User;
     }
 
+    private async refreshViews(){
+        await this.client.query(`REFRESH MATERIALIZED VIEW outcomes`);
+        await this.client.query(`REFRESH MATERIALIZED VIEW incomes`);
+    }
+
     public async addCategory(category: CategoryCreate): Promise<boolean> {
         const query = `INSERT INTO CATEGORIES (PARENT_ID, NAME, ALIASES) VALUES ($1, $2, $3)`;
         const result = await this.client.query(query, [category.parentId, category.name, category.aliases]);
         // console.log(result);
         await this.client.query(`COMMIT`);
-        await this.client.query(`REFRESH MATERIALIZED VIEW outcomes`);
-        await this.client.query(`REFRESH MATERIALIZED VIEW incomes`);
+        await this.refreshViews();
         return result;
     }
 
@@ -119,8 +123,7 @@ export class DBAdapter extends DBInterface {
         const result = await this.client.query(query, [id]);
         // console.log(result);
         await this.client.query(`COMMIT`);
-        await this.client.query(`REFRESH MATERIALIZED VIEW outcomes`);
-        await this.client.query(`REFRESH MATERIALIZED VIEW incomes`);
+        await this.refreshViews();
         return result;
     }
 
@@ -130,6 +133,7 @@ export class DBAdapter extends DBInterface {
         const result = await this.client.query(query, [record.categoryId, record.userId, record.value, record.timestamp, record.comment, record.messageId]);
         // console.log(result);
         await this.client.query(`COMMIT`);
+        await this.refreshViews();
         return !!result;
     }
 
@@ -176,6 +180,7 @@ export class DBAdapter extends DBInterface {
         const result = await this.client.query(query, [id]);
         // console.log(result);
         await this.client.query(`COMMIT`);
+        await this.refreshViews();
         return !!result;
     }
 

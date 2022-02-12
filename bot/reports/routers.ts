@@ -45,14 +45,17 @@ export function setupRouters(app: any){
 
     app.get('/web/reports/report', async (req, res) => {
         console.log(req.query);
-        const month = req.query['mon']
+        const month = req.query['mon'];
+        const tab = req.query['tab'];
         const data = await render.createMonthlyReport(month);
         console.log(data);
         res.render('reports/report/report', {
             tabs: [
                 {data: data['outcomesData'], class: 'outcomes'},
                 {data: data['incomesData'], class: 'incomes'}
-            ]
+            ],
+            brief: data['brief'],
+            tab: tab ?? 'brief'
         });
     });
 

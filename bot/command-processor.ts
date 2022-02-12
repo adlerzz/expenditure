@@ -20,8 +20,8 @@ export async function executeCommand(command: Command): Promise<CommandResult> {
         'showrecords' :    async () => await showRecords(),
         'dofile' :         async () => await doFile(),
         'out':             async () => await newOutcomeDialog(command.argument!, command.additional!),
-        'monthlyreport':     async () => await getMonthlyReport(),
-        'monthlydetails':   async () => await getMonthlyDetails(),
+        'monthlyreport':   async () => await getMonthlyReport(),
+        'monthlydetails':  async () => await getMonthlyDetails(),
         'reset' :          async () => await resetDB()
     };
 

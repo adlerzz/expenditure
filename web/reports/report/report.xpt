@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monthly report</title>
     <link rel="stylesheet" type="text/css" href="/reports/report/report.css">
+    <script src="/scripts/databus.js"></script>
+    <script>
+        putData('brief', {% autoescape false %}{{brief}}{% endautoescape %});
+        putData('tab', '{{tab}}');
+    </script>
 </head>
 <body>
 <div id="main">
@@ -17,15 +22,16 @@
             <div class="button button-incomes" onclick="showIncomes()">
                 <span>Доходы</span>
             </div>
-            <div class="button button-incomes" onclick="showBrief()">
+            <div class="button button-brief" onclick="showBrief()">
                 <span>Brief</span>
             </div>
         </div>
 
+        <div class="button button-toggle-colexp" onclick="toggleColExp()">
+            <span>toggle</span>
+        </div>
         {% for tab in tabs %}
-            <div class="button" onclick="toggle()">
-                <span>toggle</span>
-            </div>
+
             <div class="{{tab.class}} categories">
 
 
@@ -45,7 +51,7 @@
                         {% endfor %}
                     </div>
                     <div class="value">
-                        <span>Итого по категории: {{category.value}}</span>
+                        <span class="label">Итого по категории: </span><span>{{category.value}}</span>
                     </div>
                 </div>
 
@@ -53,8 +59,13 @@
             </div>
         {% endfor %}
 
+        <div class="brief">
+            <canvas id="brief-canvas"></canvas>
+        </div>
+
     </div>
 </div>
+<script src="/scripts/draw.js"></script>
 <script src="/scripts/behavior.js"></script>
 <script src="/reports/report/report.js"></script>
 </body>

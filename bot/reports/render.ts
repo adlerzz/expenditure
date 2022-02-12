@@ -79,8 +79,8 @@ export async function createMonthlyReport(month: string): Promise<object> {
         .map(volume => allCategories
             .filter(category => category.parentId == volume!.id )
         )
-        .map(categories => categories.map(category => {
-
+        .map(categories => categories
+            .map(category => {
                 const artictles = allCategories
                     .filter(article => article.parentId === category!.id)
                     .map(article => {
@@ -106,8 +106,12 @@ export async function createMonthlyReport(month: string): Promise<object> {
                     value: printCurrency(outOfArtSum)
                 });
                 const value = artictles.reduce((sum, article) => sum + article.sum, 0);
-                return({name: category.name, children: artictles, value: printCurrency(value)});
-            }));
-
-    return {outcomesData, incomesData};
+                return({name: category.name, children: artictles, sum: value, value: printCurrency(value)});
+            })
+        );
+        const brief = JSON.stringify({
+            outcomes: outcomesData.map(c => ({name: c.name, value: c.value})),
+            incomes: incomesData.map(c => ({name: c.name, value: c.value}))
+        }).replace(/"/g, '\'');
+    return {outcomesData, incomesData, brief};
 }

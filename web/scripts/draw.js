@@ -4,7 +4,10 @@ function initDraw(elementId){
     canvas.height = canvas.clientWidth / 2; //canvas.clientHeight;
 
     const context = canvas.getContext("2d");
-    return {context, canvas};
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    return {context, canvas, centerX, centerY};
 }
 
 function createSector(ctx, x0, y0, r, as, af, sc, fc) {
@@ -56,15 +59,15 @@ function getRandomColorFromPalette(palette){
     switch(palette){
         case 'warm': {
             const h = (v(120) + 320) % 360;
-            const s = v(40) + 50;
-            const l = v(20) + 50;
+            const s = v(20) + 80;
+            const l = v(10) + 50;
             return `hsl(${h}, ${s}%, ${l}%)`;
         }
 
         case 'cold': {
             const h = v(120) + 150;
-            const s = v(40) + 50;
-            const l = v(20) + 50;
+            const s = v(20) + 80;
+            const l = v(10) + 50;
             return `hsl(${h}, ${s}%, ${l}%)`;
         }
 
@@ -73,4 +76,95 @@ function getRandomColorFromPalette(palette){
         }
     }
 
+}
+const WARM_PALETTE = [
+    'hsl(280, 90%, 30%)',
+    'hsl(280, 90%, 50%)',
+    'hsl(280, 90%, 70%)',
+
+    'hsl(300, 90%, 30%)',
+    'hsl(300, 90%, 50%)',
+    'hsl(300, 90%, 70%)',
+
+    'hsl(320, 90%, 30%)',
+    'hsl(320, 90%, 50%)',
+    'hsl(320, 90%, 70%)',
+
+    'hsl(340, 90%, 30%)',
+    'hsl(340, 90%, 50%)',
+    'hsl(340, 90%, 70%)',
+
+    'hsl(  0, 90%, 30%)',
+    'hsl(  0, 90%, 50%)',
+    'hsl(  0, 90%, 70%)',
+
+    'hsl( 20, 90%, 30%)',
+    'hsl( 20, 90%, 50%)',
+    'hsl( 20, 90%, 70%)',
+
+    'hsl( 40, 90%, 30%)',
+    'hsl( 40, 90%, 50%)',
+    'hsl( 40, 90%, 70%)',
+
+    'hsl( 60, 90%, 30%)',
+    'hsl( 60, 90%, 50%)',
+    'hsl( 60, 90%, 70%)',
+
+    'hsl( 80, 90%, 30%)',
+    'hsl( 80, 90%, 50%)',
+    'hsl( 80, 90%, 70%)'
+]
+
+const COLD_PALETTE = [
+    'hsl(100, 90%, 30%)',
+    'hsl(100, 90%, 50%)',
+    'hsl(100, 90%, 70%)',
+
+    'hsl(120, 90%, 30%)',
+    'hsl(120, 90%, 50%)',
+    'hsl(120, 90%, 70%)',
+
+    'hsl(140, 90%, 30%)',
+    'hsl(140, 90%, 50%)',
+    'hsl(140, 90%, 70%)',
+
+    'hsl(160, 90%, 30%)',
+    'hsl(160, 90%, 50%)',
+    'hsl(160, 90%, 70%)',
+
+    'hsl(180, 90%, 30%)',
+    'hsl(180, 90%, 50%)',
+    'hsl(180, 90%, 70%)',
+
+    'hsl(200, 90%, 30%)',
+    'hsl(200, 90%, 50%)',
+    'hsl(200, 90%, 70%)',
+
+    'hsl(220, 90%, 30%)',
+    'hsl(220, 90%, 50%)',
+    'hsl(220, 90%, 70%)',
+
+    'hsl(240, 90%, 30%)',
+    'hsl(240, 90%, 50%)',
+    'hsl(240, 90%, 70%)',
+
+    'hsl(260, 90%, 30%)',
+    'hsl(260, 90%, 50%)',
+    'hsl(260, 90%, 70%)'
+]
+
+function getColorFromPalette(palette, index){
+    switch(palette){
+        case 'warm': {
+            return WARM_PALETTE[index % WARM_PALETTE.length];
+        }
+
+        case 'cold': {
+            return COLD_PALETTE[index % COLD_PALETTE.length];
+        }
+
+        default: {
+            return getRandomColor();
+        }
+    }
 }

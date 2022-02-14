@@ -48,60 +48,64 @@ function toggleColExp(){
 function drawBrief(elementId, key){
 
     const data = getData(key);
-    // console.log({loadedData: data});
 
-    const {context, canvas} = initDraw(elementId);
+    const {context, canvas, centerX, centerY} = initDraw(elementId);
 
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
+    const r = Math.min(centerX, centerY) * 0.5;
 
-    const r = Math.min(cx, cy) * 0.5;
+    const partToDegrees = (part, whole) => Math.round( part *360 / whole);
 
-    //context.translate(0, cy);
+    const volumesData = [
+        {
+            data: data['outcomes'],
+            palette: 'warm',
+            x0: 2 * centerX * (1/4),
+            y0: centerY
+        },
+        {
+            data: data['incomes'],
+            palette: 'cold',
+            x0: 2 * centerX * (3/4),
+            y0: centerY
+        },
+    ];
 
-    const [outcomes, incomes] = [data['outcomes'], data['incomes']];
-
-    const drawingData = [outcomes, incomes]
+    const drawingData = volumesData
         .map( volume => [
             volume,
-            volume
+            volume.data
                 .map(category => category.value < 0 ? 0 : +category.value)
                 .reduce( (a,i) => a+i)
         ])
-        .filter( ([categories,sum]) => sum > 0)
+        .filter( ([volume,sum]) => sum > 0)
 
-        .map( ([categories, sum]) => categories
-            .map(category => +category.value)
-            .reduce( (a,i) => {
-                if (a.length === 0){
-                    return [{s: 0, f: i}]
-                } else {
-                    const prev = a[a.length-1].f;
-                    a.push({s: prev, f: prev+i});
-                    return a;
-                }
-            }, [])
-            .map( i => ({s: Math.round(i.s*360 / sum) -90, f: Math.round(i.f*360 / sum ) - 90}))
-        );
+        .map( ([volume, sum]) => {
+            volume.data = volume.data
+                .map(category => +category.value)
+                .reduce((steps, value) => {
+                    if (steps.length === 0) {
+                        return [{startStep: 0, endStep: value}]
+                    } else {
+                        const prev = steps[steps.length - 1].endStep;
+                        steps.push({startStep: prev, endStep: prev + value});
+                        return steps;
+                    }
+                }, [])
+                .map(i => ({
+                    startAngle: partToDegrees(i.startStep, sum) - 90,
+                    endAngle: partToDegrees(i.endStep, sum) - 90
+                }))
+            return volume;
+        });
 
-    const eDrawingData = [{
-        drawingData: drawingData[0],
-        palette: 'warm',
-        x0: 2 * cx * (1/4)
-    }, {
-        drawingData: drawingData[1],
-        palette: 'cold',
-        x0: 2 * cx * (3/4)
-    }];
+    console.log({'drawingData': drawingData});
 
-    console.log({'eDrawingData': eDrawingData});
-
-    const sectors = eDrawingData
+    const sectors = drawingData
         .map(volume => {
 
-            return volume.drawingData.map( sectorData => {
-                const color = getRandomColorFromPalette(volume.palette);
-                return createSector(context, volume.x0 , cy, r, sectorData.s, sectorData.f, 'gray', color)
+            return volume.data.map( (sectorData, index) => {
+                const color = getColorFromPalette(volume.palette, index*4 + 1  );
+                return createSector(context, volume.x0 , volume.y0, r, sectorData.startAngle, sectorData.endAngle, 'gray', color)
             });
         })
         .flatMap(drawingData => drawingData);
@@ -110,7 +114,7 @@ function drawBrief(elementId, key){
 
     const back = () => {
         context.fillStyle = 'beige';
-        context.fillRect(0,0, 2*cx, 2*cy);
+        context.fillRect(0,0, 2*centerX, 2*centerY);
     }
 
     const draw = (needShift) => {
@@ -136,7 +140,7 @@ function drawBrief(elementId, key){
         const y = event.offsetY;
         back();
 
-        draw(sector => context.isPointInPath(sector.path, x - sector.x0, y - sector.y0)  );
+        draw(sector => context.isPointInPath(sector.path, x - sector.x0, y - sector.y0) );
 
     }));
 }

@@ -4,8 +4,9 @@
   "description": "",
   "main": "bot/app.ts",
   "scripts": {
-    "start": "npm run run",
+    "start": "npm run bot:run",
     "bot:quickstart": "ts-node -r dotenv/config -P tsconfig.json bot/app.ts",
+    "heroku-prebuild": "npm install --only=dev",
     "build": "npm run web:compile && npm run bot:compile",
     "run": "npm run build && npm run bot:run",
     "clean": "gulp clean",
@@ -14,23 +15,18 @@
     "bot:run": "node -r dotenv/config ./dist/bot/app.js"
   },
   "dependencies": {
-    "@types/node": "^16.11.20",
-    "consolidate": "^0.16.0",
-    "dotenv": "^10.0.0",
-    "express": "^4.17.2",
-    "gulp": "^4.0.2",
-    "moment": "^2.29.1",
     "pg": "^8.7.1",
-    "simple-json-db": "^1.2.3",
     "swig-templates": "^2.0.3",
     "telegraf": "^4.6.0",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.5.4",
     "tslib": "^2.3.1"
   },
   "devDependencies": {
     "@types/node": "^16.11.20",
+    "consolidate": "^0.16.0",
     "del": "^6.0.0",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.2",
+    "gulp": "^4.0.2",
     "moment": "^2.29.1",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.4"

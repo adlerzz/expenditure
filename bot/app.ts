@@ -39,8 +39,6 @@ bot.on('callback_query', interactiveHandler);
     botStarted = await start();
 })();
 
-//main();
-
 async function start(): Promise<boolean>{
 
     descs = await cpu.getCategoriesDescriptors();

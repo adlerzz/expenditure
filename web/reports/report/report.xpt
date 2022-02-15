@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monthly report</title>
     <link rel="stylesheet" type="text/css" href="/reports/report/report.css">
-    <script src="/scripts/databus.js"></script>
-    <script>
+    <script type="module">
+
+        import {putData} from "../../scripts/databus.js";
+
         putData('brief', {% autoescape false %}{{brief}}{% endautoescape %});
         putData('tab', '{{tab}}');
+        //# sourceURL=report.inline.js
     </script>
 </head>
 <body>
@@ -16,19 +19,19 @@
     <div class="content">
 
         <div class="pad">
-            <div class="button button-outcomes active" onclick="showOutcomes()">
+            <div class="button button-outcomes active">
                 <span>Расходы</span>
             </div>
-            <div class="button button-incomes" onclick="showIncomes()">
+            <div class="button button-incomes">
                 <span>Доходы</span>
             </div>
-            <div class="button button-brief" onclick="showBrief()">
-                <span>Brief</span>
+            <div class="button button-brief">
+                <span>Сводка</span>
             </div>
         </div>
 
-        <div class="button button-toggle-colexp" onclick="toggleColExp()">
-            <span>toggle</span>
+        <div class="button button-toggle-colexp" >
+            <span>Свернуть</span>
         </div>
         {% for tab in tabs %}
 
@@ -64,8 +67,6 @@
 
     </div>
 </div>
-<script src="/scripts/draw.js"></script>
-<script src="/scripts/behavior.js"></script>
-<script src="/reports/report/report.js"></script>
+<script src="/reports/report/report.js" type="module"></script>
 </body>
 </html>

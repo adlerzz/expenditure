@@ -6,7 +6,6 @@
 
 .content {
     width: 70%;
-    height: 100%;
 }
 
 .pad{
@@ -44,20 +43,27 @@
 }
 
 .categories {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-}
-
-@media all and (max-width: 800px) {
-    .categories {
-        grid-template-columns: 1fr;
-    }
+    display: flex;
+    flex-flow: column wrap;
+    height: 60%;
 }
 
 .category {
     border-top: 2px solid #8060FF;
     margin: 10px 10px;
+    width: calc(50% - 20px);
 }
+
+@media all and (max-width: 800px) {
+    .categories {
+        height: unset;
+    }
+
+    .category {
+        width: unset;
+    }
+}
+
 
 .category.reduced {
     border-top: 2px solid #8060FF;

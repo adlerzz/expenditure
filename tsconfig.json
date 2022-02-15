@@ -1,13 +1,18 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "allowSyntheticDefaultImports": true,
+    "module": "CommonJS",
     "target": "es2020",
     "moduleResolution": "Node",
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "strictNullChecks": true,
-    "outDir": "./dist/bot/"
+    "outDir": "./dist/bot/",
+    "removeComments": true,
+    "rootDirs": [
+      "bot",
+      "web"
+    ]
   },
   "include": [
     "bot/**/*"

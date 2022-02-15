@@ -1,11 +1,11 @@
 const store = new Map();
 
-function putData(key, value){
+export function putData(key: string, value: any): void{
     store.set(key, value);
     // console.log({storedData: value});
 }
 
-function getData(key) {
+export function getData(key: string): any {
     return store.get(key);
 }
 

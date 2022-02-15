@@ -42,7 +42,6 @@
         {% endfor %}
     </div>
 </div>
-<script src="/scripts/behavior.js"></script>
-<script src="/reports/details/details.js"></script>
+<script src="/reports/details/details.js" type="module"></script>
 </body>
 </html>

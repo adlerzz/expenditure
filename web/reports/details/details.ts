@@ -1,3 +1,5 @@
+import {registerSwitchingGroup, switchWithinGroup} from '../../scripts/behavior';
+
 registerSwitchingGroup('det_tab', ['.outcomes.d-table', '.incomes.d-table']);
 registerSwitchingGroup('det_but', ['.button-outcomes', '.button-incomes'], 'activate');
 
@@ -11,4 +13,4 @@ function showIncomes(){
     switchWithinGroup('det_but', '.button-incomes');
 }
 
-setTimeout( () => showOutcomes(), 0);
+setTimeout( () => showOutcomes(), 100);

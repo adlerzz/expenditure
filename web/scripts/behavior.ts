@@ -2,7 +2,7 @@ let switchingGroups = new Map();
 const HIDDEN_CLASS = 'hidden';
 const ACTIVE_CLASS = 'active'
 
-function registerSwitchingGroup(groupId, selectors, action, defaultElementSelector){
+export function registerSwitchingGroup(groupId: string, selectors: Array<string>, action?: string, defaultElementSelector?: string){
 
     if(!action){
         action = 'show';
@@ -30,20 +30,20 @@ function registerSwitchingGroup(groupId, selectors, action, defaultElementSelect
 
     switchingGroups.set(groupId, {selectors, activate, inactivate, isActive});
     selectors.forEach(selector => {
-        const cl = document.querySelector(selector).classList;
+        const cl = document.querySelector(selector)!.classList;
         inactivate(cl);
     });
-    const cl = document.querySelector(defaultElementSelector).classList;
+    const cl = document.querySelector(defaultElementSelector)!.classList;
     activate(cl);
 
 }
 
-function switchWithinGroup(groupId, activatingElementSelector){
+export function switchWithinGroup(groupId: string, activatingElementSelector: string){
     const group = switchingGroups.get(groupId);
 
     group.selectors.map(selector => document.querySelector(selector).classList)
         .filter(cl => group.isActive(cl))
         .forEach(cl => group.inactivate(cl));
-    const cl = document.querySelector(activatingElementSelector).classList;
+    const cl = document.querySelector(activatingElementSelector)!.classList;
     group.activate(cl);
 }

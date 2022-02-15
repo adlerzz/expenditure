@@ -5,7 +5,7 @@ import * as xpt from 'swig-templates';
 
 import * as render from './render';
 
-const staticPath = './web';
+const staticPath = './dist/web';
 
 export function setupRouters(app: any){
 
@@ -13,7 +13,7 @@ export function setupRouters(app: any){
     app.set('view engine', 'xpt');
     app.use(express.static(staticPath));
 
-    console.log(path.resolve('./web') + path.sep );
+    console.log(path.resolve(staticPath) + path.sep );
 
     app.engine('xpt', consolidate.swig);
 

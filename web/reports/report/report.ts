@@ -1,17 +1,27 @@
+import {registerSwitchingGroup, switchWithinGroup} from '../../scripts/behavior.js';
+import {getData} from '../../scripts/databus.js';
+import {createSector, drawSector, getColorFromPalette, initDraw} from '../../scripts/draw.js';
+
+console.log('Lets do it');
+
 registerSwitchingGroup('rep_cat', ['.outcomes.categories', '.incomes.categories', '.brief']);
 registerSwitchingGroup('rep_but', ['.button.button-outcomes', '.button.button-incomes', '.button.button-brief'], 'activate');
 
-function showOutcomes(){
+
+function showOutcomes(): void{
     switchWithinGroup('rep_cat', '.outcomes.categories');
     switchWithinGroup('rep_but', '.button.button-outcomes');
 }
 
-function showIncomes(){
+document.querySelector('.button-outcomes')!.addEventListener('click', showOutcomes);
+
+function showIncomes(): void{
     switchWithinGroup('rep_cat', '.incomes.categories');
     switchWithinGroup('rep_but', '.button.button-incomes');
 }
+document.querySelector('.button-incomes')!.addEventListener('click', showIncomes);
 
-function showBrief(){
+function showBrief(): void{
     switchWithinGroup('rep_cat', '.brief');
     switchWithinGroup('rep_but', '.button.button-brief');
 
@@ -19,9 +29,10 @@ function showBrief(){
         drawBrief('brief-canvas', 'brief');
     }, 200);
 }
+document.querySelector('.button-brief')!.addEventListener('click', showBrief);
 
 const cs = document.querySelectorAll('.categories>.category');
-
+const buttonLabel = document.querySelector('.button-toggle-colexp>span')!;
 let state = 'expanded';
 function toggleColExp(){
     switch(state) {
@@ -30,7 +41,7 @@ function toggleColExp(){
             cs.forEach(el => {
                 el.classList.remove('reduced');
             });
-
+            buttonLabel.textContent = 'Свернуть';
             state = 'expanded';
         } break;
 
@@ -39,19 +50,18 @@ function toggleColExp(){
             cs.forEach(el => {
                 el.classList.add('reduced');
             })
-
+            buttonLabel.textContent = 'Развернуть';
             state = 'collapsed';
         } break;
     }
 }
+document.querySelector('.button-toggle-colexp')!.addEventListener('click', toggleColExp);
 
 function drawBrief(elementId, key){
 
     const data = getData(key);
-
     const {context, canvas, centerX, centerY} = initDraw(elementId);
-
-    const r = Math.min(centerX, centerY) * 0.5;
+    const r = Math.min(centerX, centerY) * 0.4;
 
     const partToDegrees = (part, whole) => Math.round( part *360 / whole);
 
@@ -59,25 +69,25 @@ function drawBrief(elementId, key){
         {
             data: data['outcomes'],
             palette: 'warm',
-            x0: 2 * centerX * (1/4),
+            x0: 2 * centerX * (3/8),
             y0: centerY
         },
         {
             data: data['incomes'],
             palette: 'cold',
-            x0: 2 * centerX * (3/4),
+            x0: 2 * centerX * (7/8),
             y0: centerY
         },
     ];
 
-    const drawingData = volumesData
+    const sectorsDrawingData = volumesData
         .map( volume => [
             volume,
             volume.data
                 .map(category => category.value < 0 ? 0 : +category.value)
                 .reduce( (a,i) => a+i)
         ])
-        .filter( ([volume,sum]) => sum > 0)
+        .filter( ([volume, sum]) => sum > 0)
 
         .map( ([volume, sum]) => {
             volume.data = volume.data
@@ -98,13 +108,12 @@ function drawBrief(elementId, key){
             return volume;
         });
 
-    console.log({'drawingData': drawingData});
+    console.log({'drawingData': sectorsDrawingData});
 
-    const sectors = drawingData
+    const sectors = sectorsDrawingData
         .map(volume => {
-
             return volume.data.map( (sectorData, index) => {
-                const color = getColorFromPalette(volume.palette, index*4 + 1  );
+                const color = getColorFromPalette(volume.palette, index);
                 return createSector(context, volume.x0 , volume.y0, r, sectorData.startAngle, sectorData.endAngle, 'gray', color)
             });
         })
@@ -154,5 +163,6 @@ function switchTo(tab){
 }
 
 switchTo(getData('tab'));
+
 
 

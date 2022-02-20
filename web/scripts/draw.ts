@@ -2,18 +2,21 @@ interface DrawData {
     context: CanvasRenderingContext2D;
     canvas: HTMLCanvasElement;
     centerX, centerY: number;
+    isMobile: boolean;
 }
 
 export function initDraw(elementId: string): DrawData {
     const canvas = document.getElementById(elementId)! as HTMLCanvasElement;
     canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientWidth / 2; //canvas.clientHeight;
+    const isMobile = screen.width < 800;
+
+    canvas.height = canvas.clientWidth * ( isMobile ? 1.1 : 0.75); //canvas.clientHeight;
 
     const context = canvas.getContext("2d")!;
 
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    return {context, canvas, centerX, centerY} as DrawData;
+    return {context, canvas, centerX, centerY, isMobile} as DrawData;
 }
 
 export interface SectorData {

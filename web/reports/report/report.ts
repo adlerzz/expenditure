@@ -115,7 +115,7 @@ function drawBrief(elementId: string, key: string){
 
     const data = getData(key);
     const sectorsDrawingData = calcBrief(key);
-    const {context, canvas, centerX, centerY} = initDraw(elementId);
+    const {context, canvas, centerX, centerY, isMobile} = initDraw(elementId);
     const r = Math.min(centerX, centerY) * 0.4;
 
     //const partToDegrees = (part, whole) => Math.round( part *360 / whole);
@@ -170,9 +170,9 @@ function drawBrief(elementId: string, key: string){
             return volume.sectors.map( (sectorData, i) => ({
                 sector: createSector(context, volume.x0 , volume.y0, r, sectorData.startAngle, sectorData.endAngle, 'gray', sectorData.color),
                 bullet: {
-                    bullet: createSector(context, 30 + c * centerX, 25*i + 20, 5, 0, 360, 'gray', sectorData.color),
-                    x: 45 + c*centerX,
-                    y: 25*(i + 1)
+                    bullet: createSector(context, (isMobile ? 15 : 30) + c * centerX, (isMobile? 20 : 25)*i + 20, 5, 0, 360, 'gray', sectorData.color),
+                    x: (isMobile ? 25 : 45) + c*centerX,
+                    y: (isMobile ? 20 : 25)*i + (isMobile ? 23 : 25)
                 },
                 text: sectorData.text
             }))
@@ -213,7 +213,7 @@ function drawBrief(elementId: string, key: string){
                     context.translate(category.bullet.bullet.x0, category.bullet.bullet.y0);
                 }
             });
-            context.font = '14px sans-serif';
+            context.font = isMobile ? '8px sans-serif' : '14px sans-serif';
             context.fillStyle = 'blue';
             context.fillText(category.text, category.bullet.x, category.bullet.y);
             context.restore();

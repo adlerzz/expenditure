@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +11,6 @@
 
         putData('brief', {% autoescape false %}{{brief}}{% endautoescape %});
         putData('tab', '{{tab}}');
-        //# sourceURL=report.inline.js
     </script>
 </head>
 <body>
@@ -19,23 +18,24 @@
     <div class="content">
 
         <div class="pad">
-            <div class="button button-outcomes active">
+            <div class="button button-outcomes" t-click="showOutcomes" t-switch="activeButton activate" >
                 <span>Расходы</span>
             </div>
-            <div class="button button-incomes">
+            <div class="button button-incomes" t-click="showIncomes" t-switch="activeButton">
                 <span>Доходы</span>
             </div>
-            <div class="button button-brief">
+            <div class="button button-brief" t-click="showBrief" t-switch="activeButton">
                 <span>Сводка</span>
             </div>
         </div>
 
-        <div class="button button-toggle-colexp" >
+        <div class="button button-toggle-colexp" t-click="toggleColExp" >
             <span>Свернуть</span>
         </div>
+
         {% for tab in tabs %}
 
-            <div class="{{tab.class}} categories">
+            <div class="{{tab.class}} categories" t-switch="tab">
 
             {% for category in tab.data %}
                 <div class="category">
@@ -61,7 +61,7 @@
             </div>
         {% endfor %}
 
-        <div class="brief">
+        <div class="brief" t-switch="tab">
             <canvas id="brief-canvas"></canvas>
         </div>
 

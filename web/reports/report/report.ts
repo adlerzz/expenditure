@@ -1,61 +1,73 @@
-import {registerSwitchingGroup, switchWithinGroup} from '../../scripts/behavior.js';
+import {
+    bindClicks,
+    bindSwitchingGroups,
+    switchByElement, switchByIndex
+} from '../../scripts/behavior.js';
 import {getData} from '../../scripts/databus.js';
 import {createSector, drawSector, getColorFromPalette, initDraw, SectorData} from '../../scripts/draw.js';
 
 console.log('Lets do it');
 
-registerSwitchingGroup('rep_cat', ['.outcomes.categories', '.incomes.categories', '.brief']);
-registerSwitchingGroup('rep_but', ['.button.button-outcomes', '.button.button-incomes', '.button.button-brief'], 'activate');
 
+function showOutcomes(element?: Element): void{
+    console.log('showOutcomes');
+    if(element){
+        switchByElement('activeButton', element);
+    } else {
+        switchByIndex('activeButton', 0);
+    }
 
-function showOutcomes(): void{
-    switchWithinGroup('rep_cat', '.outcomes.categories');
-    switchWithinGroup('rep_but', '.button.button-outcomes');
+    switchByIndex('tab', 0);
 }
 
-document.querySelector('.button-outcomes')!.addEventListener('click', showOutcomes);
-
-function showIncomes(): void{
-    switchWithinGroup('rep_cat', '.incomes.categories');
-    switchWithinGroup('rep_but', '.button.button-incomes');
+function showIncomes(element?: Element): void{
+    console.log('showIncomes');
+    if(element){
+        switchByElement('activeButton', element);
+    } else {
+        switchByIndex('activeButton', 1);
+    }
+    switchByIndex('tab', 1);
 }
-document.querySelector('.button-incomes')!.addEventListener('click', showIncomes);
 
-function showBrief(): void{
-    switchWithinGroup('rep_cat', '.brief');
-    switchWithinGroup('rep_but', '.button.button-brief');
+function showBrief(element?: Element): void{
+    console.log('showBrief');
+    if(element){
+        switchByElement('activeButton', element);
+    } else {
+        switchByIndex('activeButton', 2);
+    }
+    switchByIndex('tab', 2);
 
-    setTimeout( () => {
-        drawBrief('brief-canvas', 'brief');
-    }, 200);
+    setTimeout( () => drawBrief('brief-canvas', 'brief'), 200);
 }
-document.querySelector('.button-brief')!.addEventListener('click', showBrief);
 
-const cs = document.querySelectorAll('.categories>.category');
-const buttonLabel = document.querySelector('.button-toggle-colexp>span')!;
 let state = 'expanded';
-function toggleColExp(){
+
+function toggleColExp(element: Element): void{
+    const cs = document.querySelectorAll('.categories>.category');
     switch(state) {
         case 'collapsed': {
-            console.log('collapsed -> expanded');
             cs.forEach(el => {
                 el.classList.remove('reduced');
             });
-            buttonLabel.textContent = 'Свернуть';
+            element.querySelector('*>span')!.textContent = 'Свернуть';
             state = 'expanded';
         } break;
 
         case 'expanded': {
-            console.log('expanded -> collapsed');
             cs.forEach(el => {
                 el.classList.add('reduced');
             })
-            buttonLabel.textContent = 'Развернуть';
+            element.querySelector('*>span')!.textContent = 'Развернуть';
             state = 'collapsed';
         } break;
     }
 }
-document.querySelector('.button-toggle-colexp')!.addEventListener('click', toggleColExp);
+
+bindClicks(document, {showOutcomes, showIncomes, showBrief, toggleColExp});
+bindSwitchingGroups(document);
+
 
 
 function calcBrief(key: string): any {
@@ -108,7 +120,6 @@ function calcBrief(key: string): any {
     console.log({sectorsDrawingData});
     return sectorsDrawingData;
 
-
 }
 
 function drawBrief(elementId: string, key: string){
@@ -135,35 +146,6 @@ function drawBrief(elementId: string, key: string){
 
     console.log({volumesData});
 
-    /*const sectorsDrawingData = volumesData
-        .map( volume => [
-            volume,
-            volume.data
-                .map(category => category.value < 0 ? 0 : +category.value)
-                .reduce( (a,i) => a+i)
-        ])
-        .filter( ([volume, sum]) => sum > 0)
-
-        .map( ([volume, sum]) => {
-            volume.data = volume.data
-                .map(category => +category.value)
-                .reduce((steps, value) => {
-                    if (steps.length === 0) {
-                        return [{startStep: 0, endStep: value}]
-                    } else {
-                        const prev = steps[steps.length - 1].endStep;
-                        steps.push({startStep: prev, endStep: prev + value});
-                        return steps;
-                    }
-                }, [])
-                .map(i => ({
-                    startAngle: partToDegrees(i.startStep, sum) - 90,
-                    endAngle: partToDegrees(i.endStep, sum) - 90
-                }))
-            return volume;
-        });
-
-    console.log({'drawingData': sectorsDrawingData});*/
 
     const drawingData = volumesData
         .map((volume, c) => {
@@ -185,12 +167,6 @@ function drawBrief(elementId: string, key: string){
         context.fillStyle = 'beige';
         context.strokeStyle = 'black';
         context.fillRect(0,0, 2*centerX, 2*centerY);
-        /*context.moveTo(0, centerY);
-        context.lineTo(2*centerX, centerY);
-        context.moveTo(centerX, 0);
-        context.lineTo(centerX, 2*centerY);
-        context.stroke();*/
-
     }
 
     const draw = (needShift: (SectorData) => boolean) => {
@@ -220,7 +196,6 @@ function drawBrief(elementId: string, key: string){
 
         });
 
-
     }
 
     draw(() => false);
@@ -244,6 +219,3 @@ function switchTo(tab){
 }
 
 switchTo(getData('tab'));
-
-
-

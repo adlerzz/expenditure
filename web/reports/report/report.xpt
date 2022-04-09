@@ -29,7 +29,7 @@
             </div>
         </div>
 
-        <div class="button button-toggle-colexp" t-click="toggleColExp" >
+        <div class="button button-toggle-colexp" t-toggle-on="expand" t-toggle-off="collapse" >
             <span>Свернуть</span>
         </div>
 
@@ -37,31 +37,43 @@
 
             <div class="{{tab.class}} categories" t-switch="tab">
 
-            {% for category in tab.data %}
-                <div class="category">
-                    <div class="name">
-                        <span>{{category.name}}</span>
+                {% for category in tab.data %}
+                    <div class="category">
+                        <div class="name">
+                            <span>{{category.name}}</span>
+                        </div>
+                        <div class="articles">
+                            {% for article in category.children %}
+                                <div class="name">
+                                    <span>{{article.name}}</span>
+                                </div>
+                                <div class="value">
+                                    <span>{{article.value}}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="value">
+                            <span class="label">Итого по категории: </span><span>{{category.value}}</span>
+                        </div>
                     </div>
-                    <div class="articles">
-                        {% for article in category.children %}
-                            <div class="name">
-                                <span>{{article.name}}</span>
-                            </div>
-                            <div class="value">
-                                <span>{{article.value}}</span>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <div class="value">
-                        <span class="label">Итого по категории: </span><span>{{category.value}}</span>
-                    </div>
-                </div>
 
-            {% endfor %}
+                {% endfor %}
             </div>
         {% endfor %}
 
         <div class="brief" t-switch="tab">
+            <div class="brief-body">
+                <div class="row">
+                    <div class="cell">
+                        <canvas id="outcomes-pie"></canvas>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="cell">
+                        <canvas id="incomes-pie"></canvas>
+                    </div>
+                </div>
+            </div>
             <canvas id="brief-canvas"></canvas>
         </div>
 

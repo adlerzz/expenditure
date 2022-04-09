@@ -2,6 +2,7 @@ import {DB} from '../app';
 import {DateUtils} from '../date-utils';
 
 const NO_DATA = '--';
+const NO_DETAILS = 'без уточнения';
 
 function printCurrency(value: number|null): string {
     if(value === null){
@@ -81,7 +82,7 @@ export async function createMonthlyReport(month: string): Promise<object> {
         )
         .map(categories => categories
             .map(category => {
-                const artictles = allCategories
+                const articles = allCategories
                     .filter(article => article.parentId === category!.id)
                     .map(article => {
                         const sum = records
@@ -99,19 +100,19 @@ export async function createMonthlyReport(month: string): Promise<object> {
                 const outOfArtSum = records
                     .filter(r => r.categoryId === outOfArtId)
                     .reduce((sum, val) => sum + val.value, 0);
-                artictles.push({
+                articles.push({
                     id: outOfArtId,
-                    name: 'без уточнения',
+                    name: NO_DETAILS,
                     sum: outOfArtSum,
                     value: printCurrency(outOfArtSum)
                 });
-                const value = artictles.reduce((sum, article) => sum + article.sum, 0);
-                return({name: category.name, children: artictles, sum: value, value: printCurrency(value)});
+                const value = articles.reduce((sum, article) => sum + article.sum, 0);
+                return({name: category.name, children: articles, sum: value, value: printCurrency(value)});
             })
         );
         const brief = JSON.stringify({
-            outcomes: outcomesData.map(c => ({name: c.name, value: c.value})),
-            incomes: incomesData.map(c => ({name: c.name, value: c.value}))
+            outcomes: outcomesData.map(c => ( [c.name, c.value])),
+            incomes: incomesData.map(c => ( [c.name, c.value]))
         }).replace(/"/g, '\'');
     return {outcomesData, incomesData, brief};
 }

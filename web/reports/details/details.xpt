@@ -10,17 +10,17 @@
 <div id="main">
     <div class="content">
         <div class="pad">
-            <div class="button button-outcomes active" onclick="showOutcomes()">
+            <div class="button button-outcomes active" t-click="showOutcomes" t-switch="activeButton activate">
                 Outcomes
             </div>
-            <div class="button button-incomes" onclick="showIncomes()">
+            <div class="button button-incomes" t-click="showIncomes" t-switch="activeButton">
                 Incomes
             </div>
         </div>
 
         {% for tab in tabs %}
 
-            <div class="{{tab.class}} d-table">
+            <div class="{{tab.class}} d-table" t-switch="tab">
                 <div class="d-row">
                     <div class="d-cell d-header"><span>Дата</span></div>
                     <div class="d-cell d-header"><span>Категория/Статья</span></div>

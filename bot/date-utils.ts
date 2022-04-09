@@ -38,11 +38,11 @@ export class DateUtils {
     }
 
     public static currentMonthKey(): string {
-        return DateUtils.today().format('MMM').toUpperCase();
+        return DateUtils.today().format('MM').toUpperCase();
     }
 
     public static previousMonthKey(): string {
-        return DateUtils.today().subtract(1, 'month').format('MMM').toUpperCase();
+        return DateUtils.today().subtract(1, 'month').format('MM').toUpperCase();
     }
 
     public static parseDate(text: string): Date | null {
@@ -84,6 +84,19 @@ export class DateUtils {
         return am.startOf('month');
     }
 
+    static parseMonthKey(monthKey: string): moment.Moment | null {
+        const month = parseInt(monthKey) - 1;
+        if(month < 0 || month > 11){
+            return null;
+        }
+
+        const am = DateUtils.today().month(month)
+        if(month > DateUtils.today().month()) {
+            am.subtract(1, 'year');
+        }
+        return am.startOf('month');
+    }
+
     private static parseDay(text): number | null {
         return (text.match(/^(0?[1-9]|[12][0-9]|3[01])$/) ?? []).length !== 0 ? +text : null;
     }
@@ -94,7 +107,7 @@ export class DateUtils {
     }
 
     public static isInMonth(date: Date, month: string): boolean {
-        const monthMoment = DateUtils.parseMonth(month);
+        const monthMoment = DateUtils.parseMonthKey(month);
         const dateMoment = moment(date);
         if(!monthMoment) {
             return false;

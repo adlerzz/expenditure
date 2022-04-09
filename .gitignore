@@ -1,4 +1,5 @@
 node_modules
+!web/scripts/node_modules
 /dist
 .env
 

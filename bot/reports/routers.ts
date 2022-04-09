@@ -3,7 +3,7 @@ import express from "express";
 import consolidate from "consolidate";
 import * as xpt from 'swig-templates';
 
-import * as render from './render';
+import * as render from './data-sources';
 
 const staticPath = './dist/web';
 

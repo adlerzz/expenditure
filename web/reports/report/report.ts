@@ -3,7 +3,7 @@ import {getData} from '../../scripts/databus.js';
 import {Chart, registerables} from '../../scripts/node_modules/chart.js/chart.esm.js';
 import {
     WARM_PALETTE_SET, COLD_PALETTE_SET,
-    isMobileView,
+    isMobileView, brighten, darken,
 } from '../../scripts/draw.js';
 
 Chart.register(...registerables);
@@ -44,23 +44,60 @@ bindHandlers({showOutcomes, showIncomes, showBrief, expand, collapse})
 
 const baseWidth = 360;
 
-function drawPie(elementId: string, data: Array<any>, palette: Array<string>, title: string, isMobile: boolean){
+function mask(array: string[], selected: number, palette: string[]): void {
+    array.forEach((color, index, thisArray) => {
+        thisArray[index] = index != selected ? darken(palette[index]): brighten(palette[index])
+    });
+}
+
+function unmask(array: string[], palette: string[]): void {
+    array.forEach((color, index, thisArray) => {
+        thisArray[index] = palette[index]
+    });
+}
+
+function legendHover(palette, e, item, legend){
+    mask(legend.chart.data.datasets[0].backgroundColor, item.index, palette);
+    legend.chart.update();
+}
+
+function legendLeave(palette, e, item, legend){
+    unmask(legend.chart.data.datasets[0].backgroundColor, palette);
+    legend.chart.update();
+
+}
+
+function pieHover(palette, e, items, chart){
+    if(items.length > 0){
+        mask(chart.data.datasets[0].backgroundColor, items[0].index, palette);
+        mask(chart.data.datasets[0].hoverBackgroundColor, items[0].index, palette);
+    } else {
+        unmask(chart.data.datasets[0].backgroundColor, palette)
+    }
+    chart.update();
+}
+
+function drawPie(elementId: string, data: Array<any>, palette: Array<string>, title: string, isMobile: boolean): Chart {
     const el = document.getElementById(elementId)! as HTMLCanvasElement;
     const ctx = el.getContext("2d")!
-    const labels = data.map( rec => rec[0]);
-    const values = data.map( rec => +rec[1]);
-    console.log({labels, values});
-    const chart = new Chart(ctx, {
+    const nonEmptyArticles = data.map( rec => ({name: rec[0], value: +rec[1]})).filter(rec => rec.value > 0)
+    const labels = nonEmptyArticles.map( rec => rec.name);
+    const values = nonEmptyArticles.map( rec => rec.value);
+    return new Chart(ctx, {
         type: 'pie',
         data: {
             labels: labels,
             datasets: [{
                 data: values,
-                backgroundColor: palette
+                backgroundColor: [...palette],
+                hoverBackgroundColor: [...palette],
             }]
         },
         options: {
+            responsive: true,
             aspectRatio: isMobile? 0.5 : 2,
+
+            onHover: pieHover.bind(null, palette),
             plugins: {
                 legend: {
                     position: isMobile? 'top' : 'left',
@@ -69,7 +106,10 @@ function drawPie(elementId: string, data: Array<any>, palette: Array<string>, ti
                             size: 10
                         },
                         usePointStyle: true
-                    }
+                    },
+                    onClick: () => {},
+                    onHover: legendHover.bind(null, palette),
+                    onLeave: legendLeave.bind(null, palette)
                 },
                 title: {
                     display: true,
@@ -81,6 +121,8 @@ function drawPie(elementId: string, data: Array<any>, palette: Array<string>, ti
 
 }
 
+let op, ip: Chart|null = null;
+
 function drawBrief(){
 
     const briefData = getData('brief');
@@ -89,8 +131,15 @@ function drawBrief(){
     console.log({outcomesData, incomesData});
     const isMobile = isMobileView();
 
-    drawPie('outcomes-pie', outcomesData, WARM_PALETTE_SET, 'outcomes', isMobile);
-    drawPie('incomes-pie', incomesData, COLD_PALETTE_SET, 'incomes', isMobile);
+    if(op) {
+        op.destroy();
+    }
+    if(ip) {
+        ip.destroy();
+    }
+
+    op = drawPie('outcomes-pie', outcomesData, WARM_PALETTE_SET, 'outcomes', isMobile);
+    ip = drawPie('incomes-pie', incomesData, COLD_PALETTE_SET, 'incomes', isMobile);
 
 }
 
